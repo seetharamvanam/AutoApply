@@ -214,10 +214,6 @@ See [ROADMAP.md](./docs/ROADMAP.md) for detailed development plan.
 3. Make your changes
 4. Submit a pull request
 
-## License
-
-This project is licensed under the MIT License.
-
 ## Support
 
 For issues and questions, please open an issue on GitHub.
