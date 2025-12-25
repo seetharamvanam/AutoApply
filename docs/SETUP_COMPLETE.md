@@ -34,9 +34,9 @@ All 6 microservices are configured and ready:
 - ✅ Indexes and constraints
 
 ### ✅ Setup Scripts
-- ✅ `setup.sh` / `setup.ps1` - Automated setup
-- ✅ `start-services.sh` / `start-services.ps1` - Start all services
-- ✅ `stop-services.sh` - Stop all services
+- ✅ `scripts/setup.sh` / `scripts/setup.ps1` - Automated setup
+- ✅ `scripts/start-services.sh` / `scripts/start-services.ps1` - Start all services
+- ✅ `scripts/stop-services.sh` / `scripts/stop-services.ps1` - Stop all services
 - ✅ `database/setup-database.sh` / `database/setup-database.ps1` - Database setup
 
 ### ✅ Configuration Files
@@ -46,22 +46,22 @@ All 6 microservices are configured and ready:
 
 ### ✅ Documentation
 - ✅ `README.md` - Project overview
-- ✅ `QUICKSTART.md` - Quick start guide
-- ✅ `ROADMAP.md` - Development roadmap
-- ✅ `SETUP_COMPLETE.md` - This file
+- ✅ `docs/QUICKSTART.md` - Quick start guide
+- ✅ `docs/ROADMAP.md` - Development roadmap
+- ✅ `docs/SETUP_COMPLETE.md` - This file
 
 ## Next Steps
 
 ### 1. Run Setup Script
 **Windows:**
 ```powershell
-.\setup.ps1
+.\scripts\setup.ps1
 ```
 
 **Linux/Mac:**
 ```bash
-chmod +x setup.sh
-./setup.sh
+chmod +x scripts/setup.sh
+./scripts/setup.sh
 ```
 
 ### 2. Set Up Database
@@ -95,15 +95,15 @@ cp .env.example .env
 ### 5. Start Services
 **Windows:**
 ```powershell
-.\start-services.ps1
+.\scripts\start-services.ps1
 ```
 
 **Linux/Mac:**
 ```bash
-./start-services.sh
+./scripts/start-services.sh
 ```
 
-Or start manually (see QUICKSTART.md)
+Or start manually (see `docs/QUICKSTART.md`)
 
 ### 6. Start Frontend
 ```bash
@@ -171,12 +171,16 @@ AutoApply/
 │   └── create-icons.html      ✅ Icon generator
 ├── database/                  # Database migrations
 │   └── migrations/            ✅ Schema complete
-├── setup.sh / setup.ps1       ✅ Setup scripts
-├── start-services.sh           ✅ Service scripts
+├── scripts/                    ✅ Helper scripts
+│   ├── setup.sh / setup.ps1    ✅ Setup scripts
+│   ├── start-services.sh/.ps1  ✅ Start services
+│   ├── stop-services.sh/.ps1   ✅ Stop services
+│   └── view-logs.ps1           ✅ View logs
 ├── .env.example               ✅ Environment template
 ├── README.md                  ✅ Documentation
-├── QUICKSTART.md              ✅ Quick start guide
-└── ROADMAP.md                 ✅ Development roadmap
+└── docs/                      ✅ Documentation
+    ├── QUICKSTART.md           ✅ Quick start guide
+    └── ROADMAP.md              ✅ Development roadmap
 ```
 
 ## Important Notes
@@ -209,6 +213,6 @@ Your AutoApply project foundation is complete and ready for development!
 For next steps, see:
 - [QUICKSTART.md](./QUICKSTART.md) - How to run the application
 - [ROADMAP.md](./ROADMAP.md) - Development plan
-- [README.md](./README.md) - Project overview
+- [README.md](../README.md) - Project overview
 
 Happy coding! 🚀

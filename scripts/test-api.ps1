@@ -1,5 +1,5 @@
 # AutoApply API Test Script
-# Usage: .\test-api.ps1
+# Usage: .\scripts\test-api.ps1
 
 $baseUrl = "http://localhost:8080"
 

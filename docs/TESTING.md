@@ -525,7 +525,7 @@ The frontend will be available at `http://localhost:3000`
 
 ## Complete Test Script (PowerShell)
 
-Save this as `test-api.ps1`:
+We include this script already at `scripts/test-api.ps1` (run it with `.\scripts\test-api.ps1`). Full contents below if you want to copy/modify:
 
 ```powershell
 # AutoApply API Test Script
@@ -659,7 +659,7 @@ Write-Host "=== Testing Complete ===" -ForegroundColor Cyan
 
 Run it with:
 ```powershell
-.\test-api.ps1
+.\scripts\test-api.ps1
 ```
 
 ---

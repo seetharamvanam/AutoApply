@@ -14,7 +14,7 @@ Before starting, ensure you have installed:
 ### Windows (PowerShell)
 ```powershell
 # Run the setup script
-.\setup.ps1
+.\scripts\setup.ps1
 
 # Set up database
 .\database\setup-database.ps1
@@ -23,10 +23,10 @@ Before starting, ensure you have installed:
 ### Linux/Mac (Bash)
 ```bash
 # Make scripts executable
-chmod +x setup.sh start-services.sh stop-services.sh database/setup-database.sh
+chmod +x scripts/setup.sh scripts/start-services.sh scripts/stop-services.sh database/setup-database.sh
 
 # Run the setup script
-./setup.sh
+./scripts/setup.sh
 
 # Set up database
 ./database/setup-database.sh
@@ -98,12 +98,12 @@ You can use any image editor or online icon generator.
 
 **Windows:**
 ```powershell
-.\start-services.ps1
+.\scripts\start-services.ps1
 ```
 
 **Linux/Mac:**
 ```bash
-./start-services.sh
+./scripts/start-services.sh
 ```
 
 ### Option 2: Start Services Manually
@@ -251,7 +251,7 @@ If a port is already in use, either:
 ## Next Steps
 
 - Read [ROADMAP.md](./ROADMAP.md) for development plan
-- Check [README.md](./README.md) for architecture details
+- Check [README.md](../README.md) for architecture details
 - Review API documentation in each service
 
 ## Getting Help

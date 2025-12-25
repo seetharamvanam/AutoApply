@@ -1,6 +1,9 @@
 # Complete AutoApply Setup Script
 # This script completes the remaining setup steps
 
+$RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
+Set-Location $RepoRoot
+
 Write-Host "🚀 Completing AutoApply Setup..." -ForegroundColor Blue
 Write-Host ""
 
@@ -119,9 +122,9 @@ Write-Host ""
 Write-Host "1. Update .env file with your database password" -ForegroundColor White
 Write-Host "2. Set up database (if not done): .\database\setup-database.ps1" -ForegroundColor White
 Write-Host "3. Generate browser extension icons (if needed)" -ForegroundColor White
-Write-Host "4. Start services: .\start-services.ps1" -ForegroundColor White
+Write-Host "4. Start services: .\scripts\start-services.ps1" -ForegroundColor White
 Write-Host "5. Start frontend: cd frontend; npm run dev" -ForegroundColor White
 Write-Host ""
-Write-Host "For detailed instructions, see QUICKSTART.md" -ForegroundColor Gray
+Write-Host "For detailed instructions, see docs\QUICKSTART.md" -ForegroundColor Gray
 Write-Host ""
 

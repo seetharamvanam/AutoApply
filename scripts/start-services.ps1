@@ -1,7 +1,10 @@
 # Script to start the unified AutoApply service on Windows (Background Mode - No Windows)
-# Usage: .\start-services.ps1
+# Usage: .\scripts\start-services.ps1
 
 $ErrorActionPreference = "Stop"
+
+$RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
+Set-Location $RepoRoot
 
 Write-Host "🚀 Starting AutoApply Unified Service (Background Mode)..." -ForegroundColor Blue
 Write-Host ""
@@ -63,13 +66,13 @@ function Wait-ForService {
 }
 
 # Check if .env exists
-if (-Not (Test-Path .env)) {
+if (-Not (Test-Path (Join-Path $RepoRoot ".env"))) {
     Write-Host "⚠️  .env file not found. Please create it from .env.example" -ForegroundColor Yellow
     exit 1
 }
 
 # Load environment variables from .env
-Get-Content .env | ForEach-Object {
+Get-Content (Join-Path $RepoRoot ".env") | ForEach-Object {
     if ($_ -match '^\s*([^#][^=]*)\s*=\s*(.*)\s*$') {
         $key = $matches[1].Trim()
         $value = $matches[2].Trim()
@@ -79,28 +82,32 @@ Get-Content .env | ForEach-Object {
 Write-Host "✅ Environment variables loaded from .env" -ForegroundColor Green
 
 # Check for Gradle wrapper
-if (-Not (Test-Path "backend\gradlew.bat")) {
+if (-Not (Test-Path (Join-Path $RepoRoot "backend\gradlew.bat"))) {
     Write-Host "❌ Gradle wrapper not found. Please run: cd backend && gradle wrapper" -ForegroundColor Red
     exit 1
 }
 
 # Create logs directory
-if (-Not (Test-Path logs)) {
-    New-Item -ItemType Directory -Path logs | Out-Null
+$logsDir = Join-Path $RepoRoot "logs"
+if (-Not (Test-Path $logsDir)) {
+    New-Item -ItemType Directory -Path $logsDir | Out-Null
 }
 
 # Clear previous PID files
-@() | Out-File -FilePath ".pids" -Encoding ASCII
-@() | Out-File -FilePath ".gradle_pids" -Encoding ASCII
-@() | Out-File -FilePath ".job_ids" -Encoding ASCII
+$pidsFile = Join-Path $RepoRoot ".pids"
+$gradlePidsFile = Join-Path $RepoRoot ".gradle_pids"
+$jobIdsFile = Join-Path $RepoRoot ".job_ids"
+@() | Out-File -FilePath $pidsFile -Encoding ASCII
+@() | Out-File -FilePath $gradlePidsFile -Encoding ASCII
+@() | Out-File -FilePath $jobIdsFile -Encoding ASCII
 
 # Check port before starting
 Write-Host "Checking port 8080..." -ForegroundColor Blue
 if (-not (Test-Port -Port 8080)) {
     Write-Host "  ❌ Port 8080 is already in use" -ForegroundColor Red
-    Write-Host "  Run: .\stop-services.ps1" -ForegroundColor Cyan
+    Write-Host "  Run: .\scripts\stop-services.ps1" -ForegroundColor Cyan
     exit 1
-fi
+}
 
 Write-Host "✅ Port 8080 is available" -ForegroundColor Green
 Write-Host ""
@@ -108,8 +115,8 @@ Write-Host ""
 # Start unified service
 Write-Host "Starting Unified Service (port 8080)..." -ForegroundColor Cyan
 
-$backendPath = Join-Path $PSScriptRoot "backend"
-$logPath = Join-Path $PSScriptRoot "logs\unified-service.log"
+$backendPath = Join-Path $RepoRoot "backend"
+$logPath = Join-Path $RepoRoot "logs\unified-service.log"
 
 # Prepare environment variables
 $envVars = @{}
@@ -171,8 +178,8 @@ if ($null -eq $javaPid) {
 }
 
 # Save PIDs to files
-$javaPid | Out-File -FilePath ".pids" -Encoding ASCII -Append
-$job.Id | Out-File -FilePath ".job_ids" -Encoding ASCII -Append
+$javaPid | Out-File -FilePath $pidsFile -Encoding ASCII -Append
+$job.Id | Out-File -FilePath $jobIdsFile -Encoding ASCII -Append
 
 # Wait for service to be ready
 if (Wait-ForService -Port 8080 -ServiceName "Unified Service") {
@@ -192,7 +199,7 @@ if (Wait-ForService -Port 8080 -ServiceName "Unified Service") {
     Write-Host "Logs are in the logs/ directory:" -ForegroundColor Yellow
     Write-Host "  - logs/unified-service.log" -ForegroundColor Gray
     Write-Host ""
-    Write-Host "To stop the service, run: .\stop-services.ps1" -ForegroundColor Cyan
+    Write-Host "To stop the service, run: .\scripts\stop-services.ps1" -ForegroundColor Cyan
     Write-Host "To view logs, use: Get-Content logs\unified-service.log -Tail 50 -Wait" -ForegroundColor Cyan
 } else {
     Write-Host "❌ Failed to start Unified Service. Check logs\unified-service.log" -ForegroundColor Red

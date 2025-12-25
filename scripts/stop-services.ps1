@@ -1,7 +1,12 @@
 # Script to stop all AutoApply services on Windows
-# Usage: .\stop-services.ps1
+# Usage: .\scripts\stop-services.ps1
 
 $ErrorActionPreference = "Continue"
+
+$RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
+Set-Location $RepoRoot
+$pidsFile = Join-Path $RepoRoot ".pids"
+$jobIdsFile = Join-Path $RepoRoot ".job_ids"
 
 Write-Host "🛑 Stopping AutoApply Services..." -ForegroundColor Yellow
 Write-Host ""
@@ -36,21 +41,21 @@ function Stop-ProcessGracefully {
 }
 
 # Stop Java processes (services)
-if (Test-Path .pids) {
+if (Test-Path $pidsFile) {
     Write-Host "Stopping Java processes..." -ForegroundColor Cyan
-    $pids = Get-Content .pids | Where-Object { $_ -match '^\d+$' }
+    $pids = Get-Content $pidsFile | Where-Object { $_ -match '^\d+$' }
     
     foreach ($pid in $pids) {
         Stop-ProcessGracefully -Pid ([int]$pid) | Out-Null
     }
     
-    Remove-Item .pids -Force -ErrorAction SilentlyContinue
+    Remove-Item $pidsFile -Force -ErrorAction SilentlyContinue
 }
 
 # Stop PowerShell jobs
-if (Test-Path .job_ids) {
+if (Test-Path $jobIdsFile) {
     Write-Host "Stopping PowerShell jobs..." -ForegroundColor Cyan
-    $jobIds = Get-Content .job_ids | Where-Object { $_ -match '^\d+$' }
+    $jobIds = Get-Content $jobIdsFile | Where-Object { $_ -match '^\d+$' }
     
     foreach ($jobId in $jobIds) {
         try {
@@ -64,11 +69,11 @@ if (Test-Path .job_ids) {
         }
     }
     
-    Remove-Item .job_ids -Force -ErrorAction SilentlyContinue
+    Remove-Item $jobIdsFile -Force -ErrorAction SilentlyContinue
 }
 
 # Fallback: Try to find processes by port
-if (-Not (Test-Path .pids) -and -Not (Test-Path .job_ids)) {
+if (-Not (Test-Path $pidsFile) -and -Not (Test-Path $jobIdsFile)) {
     Write-Host "No PID files found. Searching for processes by port..." -ForegroundColor Cyan
     Write-Host ""
     

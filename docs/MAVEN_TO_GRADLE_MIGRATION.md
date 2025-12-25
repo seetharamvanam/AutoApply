@@ -14,12 +14,12 @@ The AutoApply project has been successfully migrated from Maven to Gradle.
 - ✅ `backend/*/build.gradle` - Build files for each service
 
 ### Files Updated
-- ✅ `setup.sh` - Now uses Gradle instead of Maven
-- ✅ `setup.ps1` - Now uses Gradle instead of Maven
-- ✅ `start-services.sh` - Now uses Gradle bootRun task
-- ✅ `start-services.ps1` - Now uses Gradle bootRun task
+- ✅ `scripts/setup.sh` - Now uses Gradle instead of Maven
+- ✅ `scripts/setup.ps1` - Now uses Gradle instead of Maven
+- ✅ `scripts/start-services.sh` - Now uses Gradle bootRun task
+- ✅ `scripts/start-services.ps1` - Now uses Gradle bootRun task
 - ✅ `README.md` - Updated with Gradle instructions
-- ✅ `QUICKSTART.md` - Updated with Gradle commands
+- ✅ `docs/QUICKSTART.md` - Updated with Gradle commands
 - ✅ `.gitignore` - Added Gradle-specific ignores
 
 ### Files That Can Be Removed (Optional)

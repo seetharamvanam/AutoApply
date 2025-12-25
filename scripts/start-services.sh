@@ -1,9 +1,12 @@
 #!/bin/bash
 
 # Script to start the unified AutoApply service
-# Usage: ./start-services.sh
+# Usage: ./scripts/start-services.sh
 
 set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
 
 echo "🚀 Starting AutoApply Unified Service..."
 echo ""
@@ -79,7 +82,7 @@ mkdir -p logs
 echo -e "${BLUE}Checking port 8080...${NC}"
 if check_port 8080; then
     echo -e "  ${RED}❌ Port 8080 is already in use${NC}"
-    echo "  Run: ./stop-services.sh"
+    echo "  Run: ./scripts/stop-services.sh"
     exit 1
 fi
 
@@ -143,7 +146,7 @@ if wait_for_service 8080 "Unified Service"; then
     echo "Logs are in the logs/ directory:"
     echo "  - logs/unified-service.log"
     echo ""
-    echo "To stop the service, run: ./stop-services.sh"
+    echo "To stop the service, run: ./scripts/stop-services.sh"
     echo "To view logs: tail -f logs/unified-service.log"
 else
     echo -e "${RED}❌ Failed to start Unified Service. Check logs/unified-service.log${NC}"

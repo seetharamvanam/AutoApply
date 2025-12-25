@@ -41,14 +41,14 @@ AutoApply/
 
 **Windows (PowerShell):**
 ```powershell
-.\setup.ps1
+.\scripts\setup.ps1
 .\database\setup-database.ps1
 ```
 
 **Linux/Mac (Bash):**
 ```bash
-chmod +x setup.sh database/setup-database.sh
-./setup.sh
+chmod +x scripts/setup.sh database/setup-database.sh
+./scripts/setup.sh
 ./database/setup-database.sh
 ```
 
@@ -93,12 +93,12 @@ chmod +x setup.sh database/setup-database.sh
 
 **Windows:**
 ```powershell
-.\start-services.ps1
+.\scripts\start-services.ps1
 ```
 
 **Linux/Mac:**
 ```bash
-./start-services.sh
+./scripts/start-services.sh
 ```
 
 ### Start Services Manually
@@ -119,10 +119,10 @@ gradle :unified-service:bootRun
 Or use the startup script:
 ```bash
 # Windows
-.\start-services.ps1
+.\scripts\start-services.ps1
 
 # Linux/Mac
-./start-services.sh
+./scripts/start-services.sh
 ```
 
 **Frontend:**
@@ -174,15 +174,15 @@ npm run dev
 
 ## Development Roadmap
 
-See [ROADMAP.md](./ROADMAP.md) for detailed development plan.
+See [ROADMAP.md](./docs/ROADMAP.md) for detailed development plan.
 
 ## Documentation
 
-- [QUICKSTART.md](./QUICKSTART.md) - Quick start guide
-- [ROADMAP.md](./ROADMAP.md) - Development roadmap
+- [QUICKSTART.md](./docs/QUICKSTART.md) - Quick start guide
+- [ROADMAP.md](./docs/ROADMAP.md) - Development roadmap
 - [database/README.md](./database/README.md) - Database setup
 - [backend/GRADLE_SETUP.md](./backend/GRADLE_SETUP.md) - Gradle setup guide
-- [MAVEN_TO_GRADLE_MIGRATION.md](./MAVEN_TO_GRADLE_MIGRATION.md) - Migration notes
+- [MAVEN_TO_GRADLE_MIGRATION.md](./docs/MAVEN_TO_GRADLE_MIGRATION.md) - Migration notes
 
 ## API Endpoints
 

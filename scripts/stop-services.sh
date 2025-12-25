@@ -1,9 +1,12 @@
 #!/bin/bash
 
 # Script to stop all AutoApply services gracefully
-# Usage: ./stop-services.sh
+# Usage: ./scripts/stop-services.sh
 
 set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
 
 echo "🛑 Stopping AutoApply Services..."
 echo ""

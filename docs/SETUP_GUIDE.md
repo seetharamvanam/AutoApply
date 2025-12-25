@@ -65,7 +65,7 @@ You can use any image editor or online icon generator.
 
 **Option 1: Automated (All services)**
 ```powershell
-.\start-services.ps1
+.\scripts\start-services.ps1
 ```
 
 **Option 2: Manual (One service at a time)**
@@ -152,5 +152,5 @@ After setup is complete:
 
 For more details, see:
 - [QUICKSTART.md](./QUICKSTART.md)
-- [README.md](./README.md)
+- [README.md](../README.md)
 

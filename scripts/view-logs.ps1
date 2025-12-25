@@ -1,9 +1,9 @@
 # Script to view service logs
-# Usage: .\view-logs.ps1 [service-name]
+# Usage: .\scripts\view-logs.ps1 [service-name]
 # Examples:
-#   .\view-logs.ps1              # Show all logs
-#   .\view-logs.ps1 gateway      # Show only gateway logs
-#   .\view-logs.ps1 auth -Tail 20 # Show last 20 lines of auth logs
+#   .\scripts\view-logs.ps1              # Show all logs
+#   .\scripts\view-logs.ps1 gateway      # Show only gateway logs
+#   .\scripts\view-logs.ps1 auth -Tail 20 # Show last 20 lines of auth logs
 
 param(
     [string]$Service = "all",
@@ -12,6 +12,9 @@ param(
 
 Write-Host "📋 Viewing Service Logs" -ForegroundColor Cyan
 Write-Host ""
+
+$RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
+$logsDir = Join-Path $RepoRoot "logs"
 
 $services = @{
     "gateway" = "Gateway Service"
@@ -22,7 +25,7 @@ $services = @{
     "application-tracker" = "Application Tracker Service"
 }
 
-if (-Not (Test-Path logs)) {
+if (-Not (Test-Path $logsDir)) {
     Write-Host "❌ Logs directory not found. Services may not have been started yet." -ForegroundColor Red
     exit 1
 }
@@ -32,7 +35,7 @@ if ($Service -eq "all") {
     Write-Host ""
     
     foreach ($key in $services.Keys) {
-        $logFile = "logs\$key.log"
+        $logFile = Join-Path $logsDir "$key.log"
         if (Test-Path $logFile) {
             Write-Host "=== $($services[$key]) ===" -ForegroundColor Green
             Get-Content $logFile -Tail $Tail -ErrorAction SilentlyContinue
@@ -43,7 +46,7 @@ if ($Service -eq "all") {
         }
     }
 } else {
-    $logFile = "logs\$Service.log"
+    $logFile = Join-Path $logsDir "$Service.log"
     if (Test-Path $logFile) {
         Write-Host "=== $($services[$Service]) ===" -ForegroundColor Green
         Write-Host "Showing last $Tail lines:" -ForegroundColor Yellow

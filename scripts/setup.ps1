@@ -1,6 +1,9 @@
 # AutoApply Project Setup Script for Windows PowerShell
 # This script sets up the complete AutoApply project
 
+$RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
+Set-Location $RepoRoot
+
 Write-Host "🚀 Starting AutoApply Project Setup..." -ForegroundColor Blue
 Write-Host ""
 
