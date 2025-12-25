@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AutoApply Icon Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .icon-preview {
+            display: inline-block;
+            margin: 10px;
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            margin: 10px;
+        }
+        button {
+            background-color: #2563eb;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <h1>AutoApply Browser Extension Icon Generator</h1>
+    <p>This tool generates the required icon files for the browser extension.</p>
+    
+    <div id="previews"></div>
+    
+    <div>
+        <button onclick="generateIcons()">Generate Icons</button>
+        <button onclick="downloadAll()">Download All Icons</button>
+    </div>
+
+    <script>
+        function generateIcons() {
+            const sizes = [16, 48, 128];
+            const previews = document.getElementById('previews');
+            previews.innerHTML = '';
+            
+            sizes.forEach(size => {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                canvas.id = `icon${size}`;
+                const ctx = canvas.getContext('2d');
+                
+                // Draw blue background
+                ctx.fillStyle = '#2563eb';
+                ctx.fillRect(0, 0, size, size);
+                
+                // Draw white "AA" text
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `bold ${size * 0.5}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('AA', size / 2, size / 2);
+                
+                const div = document.createElement('div');
+                div.className = 'icon-preview';
+                div.innerHTML = `
+                    <canvas id="icon${size}" width="${size}" height="${size}"></canvas>
+                    <div>icon${size}.png (${size}x${size})</div>
+                `;
+                previews.appendChild(div);
+                
+                // Redraw on the actual canvas in the div
+                const canvasInDiv = div.querySelector('canvas');
+                const ctx2 = canvasInDiv.getContext('2d');
+                ctx2.fillStyle = '#2563eb';
+                ctx2.fillRect(0, 0, size, size);
+                ctx2.fillStyle = '#ffffff';
+                ctx2.font = `bold ${size * 0.5}px Arial`;
+                ctx2.textAlign = 'center';
+                ctx2.textBaseline = 'middle';
+                ctx2.fillText('AA', size / 2, size / 2);
+            });
+        }
+        
+        function downloadCanvas(canvas, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        function downloadAll() {
+            const sizes = [16, 48, 128];
+            sizes.forEach(size => {
+                const canvas = document.getElementById(`icon${size}`);
+                if (canvas) {
+                    // Create a new canvas to ensure clean download
+                    const newCanvas = document.createElement('canvas');
+                    newCanvas.width = size;
+                    newCanvas.height = size;
+                    const ctx = newCanvas.getContext('2d');
+                    
+                    ctx.fillStyle = '#2563eb';
+                    ctx.fillRect(0, 0, size, size);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = `bold ${size * 0.5}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('AA', size / 2, size / 2);
+                    
+                    downloadCanvas(newCanvas, `icon${size}.png`);
+                }
+            });
+        }
+        
+        // Generate icons on page load
+        window.onload = generateIcons;
+    </script>
+</body>
+</html>
+

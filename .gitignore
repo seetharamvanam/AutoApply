@@ -1,0 +1,67 @@
+# Java
+*.class
+*.log
+*.jar
+*.war
+*.ear
+target/
+.mvn/
+mvnw
+mvnw.cmd
+
+# Maven (not used - project uses Gradle)
+pom.xml
+**/pom.xml
+
+# Gradle
+.gradle/
+build/
+bin/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
+.pnp.js
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+.pids
+
+# Database
+*.db
+*.sqlite
+
+# Browser Extension
+browser-extension/*.zip
+browser-extension/dist/
+
+# Temporary files
+*.tmp
+*.bak
