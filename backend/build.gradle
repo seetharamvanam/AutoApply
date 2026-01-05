@@ -195,45 +195,29 @@ subprojects {
     }
 }
 
-// Root project tasks for managing all services
+// Root project tasks for managing the unified service
 task checkPorts {
     group = 'application'
-    description = 'Check if service ports are available'
+    description = 'Check if the unified service port is available'
     doLast {
-        def ports = [
-            'gateway-service': 8080,
-            'auth-service': 8081,
-            'profile-service': 8082,
-            'job-parser-service': 8083,
-            'resume-tailor-service': 8084,
-            'application-tracker-service': 8085
-        ]
-        
-        def conflicts = []
-        ports.each { service, port ->
-            try {
-                def socket = new java.net.ServerSocket(port)
-                socket.close()
-                println "✅ Port ${port} (${service}) is available"
-            } catch (Exception e) {
-                conflicts.add("Port ${port} (${service}) is already in use")
-                println "❌ Port ${port} (${service}) is already in use"
-            }
-        }
-        
-        if (!conflicts.isEmpty()) {
-            throw new RuntimeException("Port conflicts detected:\n${conflicts.join('\n')}\n\nPlease stop the services using these ports first.")
+        def port = project.hasProperty('servicePort') ? project.property('servicePort').toString().toInteger() : 8080
+        try {
+            def socket = new java.net.ServerSocket(port)
+            socket.close()
+            println "✅ Port ${port} (unified-service) is available"
+        } catch (Exception e) {
+            throw new RuntimeException("❌ Port ${port} (unified-service) is already in use. Stop the service or change server.port.\n${e.message}")
         }
     }
 }
 
 task startAllServices {
     group = 'application'
-    description = 'Start all services in background (use start-services.sh or start-services.ps1 instead)'
+    description = 'Deprecated: start the unified service directly'
     dependsOn checkPorts
     doLast {
-        println "⚠️  This task is for checking only. Use start-services.sh or start-services.ps1 to start services."
-        println "   Or run: ./gradlew :gateway-service:bootRun :auth-service:bootRun ... (in separate terminals)"
+        println "⚠️  Run the unified service directly:"
+        println "   ./gradlew :unified-service:bootRun"
     }
 }
 

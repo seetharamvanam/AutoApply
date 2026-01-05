@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import axios from 'axios'
+import { parseJob } from '../api/jobs'
+import { getApiErrorMessage } from '../api/errors'
 
 const JobAnalyzer = () => {
   const [jobDescription, setJobDescription] = useState('')
   const [jobUrl, setJobUrl] = useState('')
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleAnalyze = async () => {
     if (!jobDescription.trim()) {
@@ -15,13 +17,11 @@ const JobAnalyzer = () => {
 
     setLoading(true)
     try {
-      const response = await axios.post('/api/jobs/parse', {
-        jobDescription,
-        jobUrl
-      })
-      setResult(response.data)
+      setError('')
+      const data = await parseJob({ jobDescription, jobUrl })
+      setResult(data)
     } catch (error) {
-      alert('Failed to analyze job description')
+      setError(getApiErrorMessage(error, 'Failed to analyze job description'))
     } finally {
       setLoading(false)
     }
@@ -32,6 +32,11 @@ const JobAnalyzer = () => {
       <div className="bg-white shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">
           <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Job Description Analyzer</h3>
+          {error && (
+            <div className="rounded-md bg-red-50 p-4 mb-4">
+              <div className="text-sm text-red-800">{error}</div>
+            </div>
+          )}
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Job URL (Optional)</label>

@@ -1,12 +1,17 @@
 package com.autoapply.applicationtracker.dto;
 
 import com.autoapply.applicationtracker.entity.JobApplication;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 public class JobApplicationDTO {
     private Long id;
+    @NotNull(message = "userId is required")
     private Long userId;
+    @NotBlank(message = "jobTitle is required")
     private String jobTitle;
+    @NotBlank(message = "companyName is required")
     private String companyName;
     private String jobUrl;
     private JobApplication.ApplicationStatus status;

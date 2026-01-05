@@ -11,7 +11,7 @@ This roadmap outlines the development plan for AutoApply, an AI-powered job appl
 **Goal**: Establish development environment and core infrastructure
 
 **Tasks**:
-- [x] Set up project structure (backend microservices, frontend, browser extension)
+- [x] Set up project structure (unified backend service, frontend, browser extension)
 - [x] Configure PostgreSQL database
 - [x] Set up Redis cache
 - [x] Create database schema and migrations
@@ -33,7 +33,7 @@ This roadmap outlines the development plan for AutoApply, an AI-powered job appl
 **Goal**: Implement user authentication and profile management
 
 **Tasks**:
-- [x] Implement JWT authentication in auth-service
+- [x] Implement JWT authentication (unified service)
 - [x] Create user registration and login endpoints
 - [x] Build profile CRUD operations
 - [x] Implement protected routes in frontend
@@ -55,7 +55,7 @@ This roadmap outlines the development plan for AutoApply, an AI-powered job appl
 **Goal**: Implement job description parsing with AI integration points
 
 **Tasks**:
-- [x] Create job-parser-service endpoints
+- [x] Create job parser endpoints (unified service)
 - [x] Design job parsing DTOs and data structures
 - [x] Implement stubbed AI parsing service
 - [x] Create job analyzer UI page
@@ -76,7 +76,7 @@ This roadmap outlines the development plan for AutoApply, an AI-powered job appl
 **Goal**: Build resume tailoring system with ATS optimization
 
 **Tasks**:
-- [x] Create resume-tailor-service endpoints
+- [x] Create resume tailor endpoints (unified service)
 - [x] Implement stubbed resume tailoring AI service
 - [x] Create ATS scoring service (stubbed)
 - [x] Build resume tailor UI
@@ -97,7 +97,7 @@ This roadmap outlines the development plan for AutoApply, an AI-powered job appl
 **Goal**: Implement job application tracking system
 
 **Tasks**:
-- [x] Create application-tracker-service endpoints
+- [x] Create application tracker endpoints (unified service)
 - [x] Build application CRUD operations
 - [x] Implement status tracking (Applied, Interview, Offer, etc.)
 - [x] Create application tracker UI

@@ -3,13 +3,8 @@
 ## What Has Been Set Up
 
 ### ✅ Backend Services (Spring Boot)
-All 6 microservices are configured and ready:
-- ✅ Gateway Service (port 8080) - API routing
-- ✅ Auth Service (port 8081) - JWT authentication
-- ✅ Profile Service (port 8082) - User profiles
-- ✅ Job Parser Service (port 8083) - Job description parsing
-- ✅ Resume Tailor Service (port 8084) - Resume tailoring
-- ✅ Application Tracker Service (port 8085) - Application tracking
+The unified Spring Boot service is configured and ready:
+- ✅ Unified Service (port 8080) - Auth, Profile, Job Parser, Resume Tailor, Application Tracker, Form Automation APIs
 
 ### ✅ Frontend (React + TailwindCSS)
 - ✅ Complete React application with routing
@@ -40,7 +35,7 @@ All 6 microservices are configured and ready:
 - ✅ `database/setup-database.sh` / `database/setup-database.ps1` - Database setup
 
 ### ✅ Configuration Files
-- ✅ `.env.example` - Environment template
+- ✅ `env.example` - Environment template
 - ✅ `.gitignore` - Git ignore rules
 - ✅ All service `application.yml` files configured
 
@@ -79,7 +74,7 @@ chmod +x database/setup-database.sh
 ### 3. Configure Environment
 ```bash
 # Copy example file
-cp .env.example .env
+cp env.example .env
 
 # Edit .env with your settings:
 # - DB_USERNAME=postgres
@@ -151,13 +146,8 @@ See [ROADMAP.md](./ROADMAP.md) for detailed plan
 
 ```
 AutoApply/
-├── backend/                    # Spring Boot microservices
-│   ├── gateway-service/       ✅ Complete
-│   ├── auth-service/          ✅ Complete
-│   ├── profile-service/       ✅ Complete
-│   ├── job-parser-service/    ✅ Complete (AI stubbed)
-│   ├── resume-tailor-service/ ✅ Complete (AI stubbed)
-│   └── application-tracker-service/ ✅ Complete
+├── backend/                    # Spring Boot backend
+│   └── unified-service/        ✅ Unified service (monolith)
 ├── frontend/                   # React application
 │   ├── src/
 │   │   ├── pages/             ✅ All pages complete
@@ -176,7 +166,7 @@ AutoApply/
 │   ├── start-services.sh/.ps1  ✅ Start services
 │   ├── stop-services.sh/.ps1   ✅ Stop services
 │   └── view-logs.ps1           ✅ View logs
-├── .env.example               ✅ Environment template
+├── env.example                ✅ Environment template
 ├── README.md                  ✅ Documentation
 └── docs/                      ✅ Documentation
     ├── QUICKSTART.md           ✅ Quick start guide
@@ -185,17 +175,15 @@ AutoApply/
 
 ## Important Notes
 
-1. **POM File**: Fixed `<n>` tag issue in `backend/pom.xml` (should now be `<name>`)
+1. **AI Services**: AI services are stubbed and ready for integration. See:
+   - `backend/unified-service/src/main/java/com/autoapply/jobparser/service/ai`
+   - `backend/unified-service/src/main/java/com/autoapply/resumetailor/service/ai`
 
-2. **AI Services**: All AI services are stubbed and ready for integration. See:
-   - `backend/job-parser-service/src/main/java/com/autoapply/jobparser/service/ai/JobParsingService.java`
-   - `backend/resume-tailor-service/src/main/java/com/autoapply/resumetailor/service/ai/ResumeTailoringService.java`
+2. **Environment Variables**: Make sure to update `.env` with your actual values before running services
 
-3. **Environment Variables**: Make sure to update `.env` with your actual values before running services
+3. **Database**: Ensure PostgreSQL is running before starting services
 
-4. **Database**: Ensure PostgreSQL is running before starting services
-
-5. **Ports**: Make sure ports 8080-8085 and 3000 are available
+4. **Ports**: Make sure ports 8080 and 3000 are available
 
 ## Troubleshooting
 

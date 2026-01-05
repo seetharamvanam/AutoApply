@@ -72,23 +72,8 @@ You can use any image editor or online icon generator.
 ```powershell
 cd backend
 
-# Terminal 1 - Gateway Service
-.\gradlew.bat :gateway-service:bootRun
-
-# Terminal 2 - Auth Service  
-.\gradlew.bat :auth-service:bootRun
-
-# Terminal 3 - Profile Service
-.\gradlew.bat :profile-service:bootRun
-
-# Terminal 4 - Job Parser Service
-.\gradlew.bat :job-parser-service:bootRun
-
-# Terminal 5 - Resume Tailor Service
-.\gradlew.bat :resume-tailor-service:bootRun
-
-# Terminal 6 - Application Tracker Service
-.\gradlew.bat :application-tracker-service:bootRun
+# Unified Service (port 8080)
+.\gradlew.bat :unified-service:bootRun
 ```
 
 ### Start Frontend
@@ -108,12 +93,7 @@ The frontend will be available at: http://localhost:3000
    - Check tables were created
 
 2. **Check Backend Services**
-   - Gateway: http://localhost:8080
-   - Auth: http://localhost:8081
-   - Profile: http://localhost:8082
-   - Job Parser: http://localhost:8083
-   - Resume Tailor: http://localhost:8084
-   - Application Tracker: http://localhost:8085
+   - Unified Service: http://localhost:8080
 
 3. **Check Frontend**
    - Open http://localhost:3000

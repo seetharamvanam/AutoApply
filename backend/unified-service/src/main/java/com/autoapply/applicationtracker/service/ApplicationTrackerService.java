@@ -3,11 +3,11 @@ package com.autoapply.applicationtracker.service;
 import com.autoapply.applicationtracker.dto.JobApplicationDTO;
 import com.autoapply.applicationtracker.entity.JobApplication;
 import com.autoapply.applicationtracker.repository.JobApplicationRepository;
+import com.autoapply.common.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ApplicationTrackerService {
@@ -36,20 +36,20 @@ public class ApplicationTrackerService {
         List<JobApplication> applications = jobApplicationRepository.findByUserIdOrderByAppliedDateDesc(userId);
         return applications.stream()
                 .map(this::mapToDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<JobApplicationDTO> getApplicationsByStatus(Long userId, JobApplication.ApplicationStatus status) {
         List<JobApplication> applications = jobApplicationRepository.findByUserIdAndStatus(userId, status);
         return applications.stream()
                 .map(this::mapToDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional
     public JobApplicationDTO updateApplication(Long id, JobApplicationDTO dto) {
         JobApplication application = jobApplicationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Application not found"));
+                .orElseThrow(() -> new NotFoundException("Application not found: " + id));
 
         if (dto.getStatus() != null) {
             application.setStatus(dto.getStatus());
@@ -59,6 +59,9 @@ public class ApplicationTrackerService {
         }
         if (dto.getJobUrl() != null) {
             application.setJobUrl(dto.getJobUrl());
+        }
+        if (dto.getResumeVersionId() != null) {
+            application.setResumeVersionId(dto.getResumeVersionId());
         }
 
         application = jobApplicationRepository.save(application);

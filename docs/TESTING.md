@@ -667,7 +667,7 @@ Run it with:
 ## Troubleshooting
 
 ### Services Not Starting
-- Check if ports 8080-8085 are already in use
+- Check if port 8080 is already in use
 - Verify PostgreSQL is running
 - Check database connection in `.env` file
 - Review service logs in PowerShell windows
@@ -684,9 +684,9 @@ Run it with:
 - Verify user exists in database
 
 ### CORS Errors
-- Ensure requests are made to `http://localhost:8080` (gateway)
+- Ensure requests are made to `http://localhost:8080` (backend)
 - Frontend should be running on `http://localhost:3000`
-- Check gateway service is running
+- Check the unified backend service is running
 
 ---
 

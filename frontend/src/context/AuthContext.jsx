@@ -1,5 +1,8 @@
-import { createContext, useContext, useState, useEffect } from 'react'
-import axios from 'axios'
+import { createContext, useContext, useEffect, useState } from 'react'
+import * as authApi from '../api/auth'
+import { getApiErrorMessage } from '../api/errors'
+import { parseJwtPayload } from '../utils/jwt'
+import { clearToken, getToken as getStoredToken, setToken as setStoredToken } from '../utils/storage'
 
 const AuthContext = createContext()
 
@@ -12,94 +15,89 @@ export const useAuth = () => {
 }
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [token, setToken] = useState(localStorage.getItem('token'))
-
-  useEffect(() => {
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      // TODO: Verify token and fetch user info
-    } else {
-      delete axios.defaults.headers.common['Authorization']
+  const deriveUserFromToken = (jwtToken) => {
+    if (!jwtToken) return null
+    const payload = parseJwtPayload(jwtToken)
+    if (!payload?.userId) return null
+    return {
+      userId: payload.userId,
+      email: payload.email || payload.sub
     }
-    setLoading(false)
+  }
+
+  const [token, setTokenState] = useState(() => getStoredToken())
+  const [user, setUser] = useState(() => deriveUserFromToken(getStoredToken()))
+  const [loading, setLoading] = useState(false)
+
+  // Keep user in sync with token. If token becomes invalid/expired, clear it.
+  useEffect(() => {
+    if (!token) {
+      setUser(null)
+      return
+    }
+
+    const nextUser = deriveUserFromToken(token)
+    if (!nextUser) {
+      clearToken()
+      setTokenState(null)
+      setUser(null)
+      return
+    }
+
+    setUser(nextUser)
   }, [token])
 
   const login = async (email, password) => {
+    setLoading(true)
     try {
-      const response = await axios.post('/api/auth/login', { email, password })
-      const { token, userId, email: userEmail } = response.data
-      localStorage.setItem('token', token)
-      setToken(token)
-      setUser({ userId, email: userEmail })
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      const data = await authApi.login({ email, password })
+      setStoredToken(data.token)
+      setTokenState(data.token)
+      setUser({ userId: data.userId, email: data.email })
       return { success: true }
     } catch (error) {
-      console.error('Login error:', error)
-      const errorMessage = error.response?.data?.message 
-        || error.message 
-        || (error.code === 'ERR_NETWORK' ? 'Cannot connect to server. Is the backend running?' : 'Login failed')
-      return { success: false, error: errorMessage }
+      return { success: false, error: getApiErrorMessage(error, 'Login failed') }
+    } finally {
+      setLoading(false)
     }
   }
 
   const register = async (email, password, firstName, lastName) => {
+    setLoading(true)
     try {
-      const response = await axios.post('/api/auth/register', {
-        email,
-        password,
-        firstName,
-        lastName
-      })
-      const { token, userId, email: userEmail } = response.data
-      localStorage.setItem('token', token)
-      setToken(token)
-      setUser({ userId, email: userEmail })
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      const data = await authApi.register({ email, password, firstName, lastName })
+      setStoredToken(data.token)
+      setTokenState(data.token)
+      setUser({ userId: data.userId, email: data.email })
       return { success: true }
     } catch (error) {
-      console.error('Registration error:', error)
-      const errorMessage = error.response?.data?.message 
-        || error.message 
-        || (error.code === 'ERR_NETWORK' ? 'Cannot connect to server. Is the backend running?' : 'Registration failed')
-      return { success: false, error: errorMessage }
+      return { success: false, error: getApiErrorMessage(error, 'Registration failed') }
+    } finally {
+      setLoading(false)
     }
   }
 
   const logout = () => {
-    localStorage.removeItem('token')
-    setToken(null)
+    clearToken()
+    setTokenState(null)
     setUser(null)
-    delete axios.defaults.headers.common['Authorization']
   }
 
   const forgotPassword = async (email) => {
     try {
-      const response = await axios.post('/api/auth/forgot-password', { email })
-      return { success: true, message: response.data.message }
+      const data = await authApi.forgotPassword({ email })
+      return { success: true, message: data.message }
     } catch (error) {
-      console.error('Forgot password error:', error)
-      const errorMessage = error.response?.data?.message 
-        || error.message 
-        || (error.code === 'ERR_NETWORK' ? 'Cannot connect to server. Is the backend running?' : 'Failed to send reset email')
-      return { success: false, error: errorMessage }
+      return { success: false, error: getApiErrorMessage(error, 'Failed to send reset email') }
     }
   }
 
   const resetPassword = async (token, newPassword) => {
     try {
-      const response = await axios.post('/api/auth/reset-password', { 
-        token, 
-        newPassword 
-      })
-      return { success: true, message: response.data.message }
+      const data = await authApi.resetPassword({ token, newPassword })
+      return { success: true, message: data.message }
     } catch (error) {
-      console.error('Reset password error:', error)
-      const errorMessage = error.response?.data?.message 
-        || error.message 
-        || (error.code === 'ERR_NETWORK' ? 'Cannot connect to server. Is the backend running?' : 'Failed to reset password')
-      return { success: false, error: errorMessage }
+      return { success: false, error: getApiErrorMessage(error, 'Failed to reset password') }
     }
   }
 

@@ -1,8 +1,9 @@
 package com.autoapply.auth.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.autoapply.common.config.CorsProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -14,19 +15,18 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
 
 @Configuration
 @EnableWebSecurity
+@EnableConfigurationProperties(CorsProperties.class)
 public class SecurityConfig {
-    
-    @Value("${cors.allowed-origins}")
-    private String allowedOrigins;
-    
-    @Value("${cors.allowed-methods}")
-    private String allowedMethods;
-    
-    @Value("${cors.max-age:3600}")
-    private long maxAge;
+    private final CorsProperties corsProperties;
+
+    public SecurityConfig(CorsProperties corsProperties) {
+        this.corsProperties = corsProperties;
+    }
     
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -46,24 +46,32 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Parse allowed origins from config (supports patterns like chrome-extension://*)
-        Arrays.stream(allowedOrigins.split(","))
-            .map(String::trim)
+        // Use allowed origin patterns (supports patterns like chrome-extension://*)
+        csvList(corsProperties.getAllowedOrigins())
             .forEach(configuration::addAllowedOriginPattern);
-        
-        // Parse allowed methods
-        Arrays.stream(allowedMethods.split(","))
-            .map(String::trim)
+
+        csvList(corsProperties.getAllowedMethods())
             .forEach(configuration::addAllowedMethod);
-        
-        // Standard headers
-        configuration.addAllowedHeader("*");
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(maxAge);
+
+        csvList(corsProperties.getAllowedHeaders())
+            .forEach(configuration::addAllowedHeader);
+
+        configuration.setAllowCredentials(corsProperties.isAllowCredentials());
+        configuration.setMaxAge(corsProperties.getMaxAge());
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    private static Stream<String> csvList(List<String> values) {
+        if (values == null || values.isEmpty()) return Stream.empty();
+        return values.stream()
+            .filter(s -> s != null && !s.isBlank())
+            // Support both YAML lists and comma-separated strings (common with env var defaults)
+            .flatMap(s -> Arrays.stream(s.split(",")))
+            .map(String::trim)
+            .filter(s -> !s.isBlank());
     }
 
     @Bean

@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
+import { tailorResume } from '../api/resumes'
+import { getApiErrorMessage } from '../api/errors'
 
 const ResumeTailor = () => {
   const { user } = useAuth()
@@ -9,6 +10,7 @@ const ResumeTailor = () => {
   const [companyName, setCompanyName] = useState('')
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleTailor = async () => {
     if (!jobDescription.trim()) {
@@ -18,15 +20,16 @@ const ResumeTailor = () => {
 
     setLoading(true)
     try {
-      const response = await axios.post('/api/resumes/tailor', {
+      setError('')
+      const data = await tailorResume({
         userId: user.userId,
         jobDescription,
         jobTitle,
         companyName
       })
-      setResult(response.data)
+      setResult(data)
     } catch (error) {
-      alert('Failed to tailor resume')
+      setError(getApiErrorMessage(error, 'Failed to tailor resume'))
     } finally {
       setLoading(false)
     }
@@ -37,6 +40,11 @@ const ResumeTailor = () => {
       <div className="bg-white shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">
           <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Resume Tailor</h3>
+          {error && (
+            <div className="rounded-md bg-red-50 p-4 mb-4">
+              <div className="text-sm text-red-800">{error}</div>
+            </div>
+          )}
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Job Title</label>

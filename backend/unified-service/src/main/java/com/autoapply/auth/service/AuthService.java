@@ -9,6 +9,9 @@ import com.autoapply.auth.entity.PasswordResetToken;
 import com.autoapply.auth.entity.User;
 import com.autoapply.auth.repository.PasswordResetTokenRepository;
 import com.autoapply.auth.repository.UserRepository;
+import com.autoapply.common.exception.BadRequestException;
+import com.autoapply.common.exception.ConflictException;
+import com.autoapply.common.exception.UnauthorizedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,7 +42,7 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new ConflictException("Email already exists");
         }
 
         User user = new User();
@@ -56,10 +59,10 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+                .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new UnauthorizedException("Invalid credentials");
         }
 
         String token = jwtService.generateToken(user.getId(), user.getEmail());
@@ -68,8 +71,11 @@ public class AuthService {
 
     @Transactional
     public void forgotPassword(ForgotPasswordRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("If an account with that email exists, a password reset link has been sent."));
+        // Security: do not reveal whether an email exists.
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if (user == null) {
+            return;
+        }
 
         // Invalidate any existing tokens for this user
         passwordResetTokenRepository.deleteByUserId(user.getId());
@@ -89,10 +95,10 @@ public class AuthService {
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
         PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(request.getToken())
-                .orElseThrow(() -> new RuntimeException("Invalid or expired reset token"));
+                .orElseThrow(() -> new BadRequestException("Invalid or expired reset token"));
 
         if (!resetToken.isValid()) {
-            throw new RuntimeException("Invalid or expired reset token");
+            throw new BadRequestException("Invalid or expired reset token");
         }
 
         // Update user password

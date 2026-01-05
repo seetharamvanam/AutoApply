@@ -56,7 +56,7 @@ public class JobApplication {
     }
 
     public enum ApplicationStatus {
-        APPLIED, SCREENING, INTERVIEW, OFFER, REJECTED, WITHDRAWN
+        APPLIED, SCREENING, INTERVIEW, INTERVIEW_DONE, OFFER, REJECTED, WITHDRAWN
     }
 
     // Getters and Setters

@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS job_applications (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_application_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT chk_status CHECK (status IN ('APPLIED', 'SCREENING', 'INTERVIEW', 'OFFER', 'REJECTED', 'WITHDRAWN'))
+    CONSTRAINT chk_status CHECK (status IN ('APPLIED', 'SCREENING', 'INTERVIEW', 'INTERVIEW_DONE', 'OFFER', 'REJECTED', 'WITHDRAWN'))
 );
 
 CREATE INDEX idx_applications_user_id ON job_applications(user_id);

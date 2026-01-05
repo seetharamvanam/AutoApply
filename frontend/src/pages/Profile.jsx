@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
+import { getApiErrorMessage } from '../api/errors'
+import { getProfile, upsertProfile } from '../api/profile'
+import Spinner from '../components/common/Spinner'
 
 const Profile = () => {
   const { user } = useAuth()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (user) {
@@ -16,10 +19,11 @@ const Profile = () => {
 
   const fetchProfile = async () => {
     try {
-      const response = await axios.get(`/api/profile/${user.userId}`)
-      setProfile(response.data)
+      setError('')
+      const data = await getProfile(user.userId)
+      setProfile(data)
     } catch (error) {
-      console.error('Failed to fetch profile:', error)
+      setError(getApiErrorMessage(error, 'Failed to fetch profile'))
     } finally {
       setLoading(false)
     }
@@ -28,17 +32,18 @@ const Profile = () => {
   const handleSave = async () => {
     setSaving(true)
     try {
-      await axios.post(`/api/profile/${user.userId}`, profile)
+      setError('')
+      await upsertProfile(user.userId, profile)
       alert('Profile saved successfully!')
     } catch (error) {
-      alert('Failed to save profile')
+      setError(getApiErrorMessage(error, 'Failed to save profile'))
     } finally {
       setSaving(false)
     }
   }
 
   if (loading) {
-    return <div className="text-center py-12">Loading...</div>
+    return <Spinner label="Loading profile..." />
   }
 
   return (
@@ -46,6 +51,11 @@ const Profile = () => {
       <div className="bg-white shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">
           <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">User Profile</h3>
+          {error && (
+            <div className="rounded-md bg-red-50 p-4 mb-4">
+              <div className="text-sm text-red-800">{error}</div>
+            </div>
+          )}
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Full Name</label>

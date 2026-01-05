@@ -3,10 +3,9 @@ package com.autoapply.profile.service;
 import com.autoapply.profile.dto.*;
 import com.autoapply.profile.entity.*;
 import com.autoapply.profile.repository.ProfileRepository;
+import com.autoapply.common.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.stream.Collectors;
 
 @Service
 public class ProfileService {
@@ -21,6 +20,23 @@ public class ProfileService {
         Profile profile = profileRepository.findByUserId(userId)
                 .orElse(new Profile());
 
+        applyBasicProfileFields(profile, userId, profileDTO);
+
+        replaceExperiences(profile, profileDTO);
+        replaceEducation(profile, profileDTO);
+        replaceSkills(profile, profileDTO);
+
+        Profile savedProfile = java.util.Objects.requireNonNull(profileRepository.save(profile));
+        return mapToDTO(savedProfile);
+    }
+
+    public ProfileDTO getProfileByUserId(Long userId) {
+        Profile profile = profileRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException("Profile not found for userId: " + userId));
+        return mapToDTO(profile);
+    }
+
+    private void applyBasicProfileFields(Profile profile, Long userId, ProfileDTO profileDTO) {
         profile.setUserId(userId);
         profile.setFullName(profileDTO.getFullName());
         profile.setPhone(profileDTO.getPhone());
@@ -28,61 +44,67 @@ public class ProfileService {
         profile.setLinkedinUrl(profileDTO.getLinkedinUrl());
         profile.setPortfolioUrl(profileDTO.getPortfolioUrl());
         profile.setSummary(profileDTO.getSummary());
-
-        // Update experiences
-        if (profileDTO.getExperiences() != null) {
-            profile.getExperiences().clear();
-            profileDTO.getExperiences().forEach(expDTO -> {
-                Experience exp = new Experience();
-                exp.setCompany(expDTO.getCompany());
-                exp.setPosition(expDTO.getPosition());
-                exp.setDescription(expDTO.getDescription());
-                exp.setStartDate(expDTO.getStartDate());
-                exp.setEndDate(expDTO.getEndDate());
-                exp.setIsCurrent(expDTO.getIsCurrent());
-                exp.setLocation(expDTO.getLocation());
-                exp.setProfile(profile);
-                profile.getExperiences().add(exp);
-            });
-        }
-
-        // Update education
-        if (profileDTO.getEducation() != null) {
-            profile.getEducation().clear();
-            profileDTO.getEducation().forEach(eduDTO -> {
-                Education edu = new Education();
-                edu.setInstitution(eduDTO.getInstitution());
-                edu.setDegree(eduDTO.getDegree());
-                edu.setFieldOfStudy(eduDTO.getFieldOfStudy());
-                edu.setStartDate(eduDTO.getStartDate());
-                edu.setEndDate(eduDTO.getEndDate());
-                edu.setGpa(eduDTO.getGpa());
-                edu.setProfile(profile);
-                profile.getEducation().add(edu);
-            });
-        }
-
-        // Update skills
-        if (profileDTO.getSkills() != null) {
-            profile.getSkills().clear();
-            profileDTO.getSkills().forEach(skillDTO -> {
-                Skill skill = new Skill();
-                skill.setName(skillDTO.getName());
-                skill.setCategory(skillDTO.getCategory());
-                skill.setProficiencyLevel(skillDTO.getProficiencyLevel());
-                skill.setProfile(profile);
-                profile.getSkills().add(skill);
-            });
-        }
-
-        Profile savedProfile = profileRepository.save(profile);
-        return mapToDTO(savedProfile);
     }
 
-    public ProfileDTO getProfileByUserId(Long userId) {
-        Profile profile = profileRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
-        return mapToDTO(profile);
+    private void replaceExperiences(Profile profile, ProfileDTO profileDTO) {
+        if (profileDTO.getExperiences() == null) {
+            return;
+        }
+
+        profile.getExperiences().clear();
+        profileDTO.getExperiences().forEach(expDTO -> profile.getExperiences().add(toExperience(profile, expDTO)));
+    }
+
+    private Experience toExperience(Profile profile, ExperienceDTO expDTO) {
+        Experience exp = new Experience();
+        exp.setCompany(expDTO.getCompany());
+        exp.setPosition(expDTO.getPosition());
+        exp.setDescription(expDTO.getDescription());
+        exp.setStartDate(expDTO.getStartDate());
+        exp.setEndDate(expDTO.getEndDate());
+        exp.setIsCurrent(expDTO.getIsCurrent());
+        exp.setLocation(expDTO.getLocation());
+        exp.setProfile(profile);
+        return exp;
+    }
+
+    private void replaceEducation(Profile profile, ProfileDTO profileDTO) {
+        if (profileDTO.getEducation() == null) {
+            return;
+        }
+
+        profile.getEducation().clear();
+        profileDTO.getEducation().forEach(eduDTO -> profile.getEducation().add(toEducation(profile, eduDTO)));
+    }
+
+    private Education toEducation(Profile profile, EducationDTO eduDTO) {
+        Education edu = new Education();
+        edu.setInstitution(eduDTO.getInstitution());
+        edu.setDegree(eduDTO.getDegree());
+        edu.setFieldOfStudy(eduDTO.getFieldOfStudy());
+        edu.setStartDate(eduDTO.getStartDate());
+        edu.setEndDate(eduDTO.getEndDate());
+        edu.setGpa(eduDTO.getGpa());
+        edu.setProfile(profile);
+        return edu;
+    }
+
+    private void replaceSkills(Profile profile, ProfileDTO profileDTO) {
+        if (profileDTO.getSkills() == null) {
+            return;
+        }
+
+        profile.getSkills().clear();
+        profileDTO.getSkills().forEach(skillDTO -> profile.getSkills().add(toSkill(profile, skillDTO)));
+    }
+
+    private Skill toSkill(Profile profile, SkillDTO skillDTO) {
+        Skill skill = new Skill();
+        skill.setName(skillDTO.getName());
+        skill.setCategory(skillDTO.getCategory());
+        skill.setProficiencyLevel(skillDTO.getProficiencyLevel());
+        skill.setProfile(profile);
+        return skill;
     }
 
     private ProfileDTO mapToDTO(Profile profile) {
@@ -100,15 +122,15 @@ public class ProfileService {
 
         dto.setExperiences(profile.getExperiences().stream()
                 .map(this::mapExperienceToDTO)
-                .collect(Collectors.toList()));
+                .toList());
 
         dto.setEducation(profile.getEducation().stream()
                 .map(this::mapEducationToDTO)
-                .collect(Collectors.toList()));
+                .toList());
 
         dto.setSkills(profile.getSkills().stream()
                 .map(this::mapSkillToDTO)
-                .collect(Collectors.toList()));
+                .toList());
 
         return dto;
     }

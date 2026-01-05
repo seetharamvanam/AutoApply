@@ -8,9 +8,11 @@
    CREATE DATABASE autoapply;
    ```
 
-3. Run migrations in order:
+3. Run migrations:
    ```bash
-   psql -U postgres -d autoapply -f migrations/001_initial_schema.sql
+   psql -U postgres -d autoapply -f database/migrations/001_initial_schema.sql
+   psql -U postgres -d autoapply -f database/migrations/002_add_password_reset_tokens.sql
+   psql -U postgres -d autoapply -f database/migrations/003_update_job_application_statuses.sql
    ```
 
 ## Schema Overview
@@ -26,7 +28,7 @@
 ## Environment Variables
 
 Set these in your Spring Boot application:
-- `DB_USERNAME`: PostgreSQL username (default: postgres)
-- `DB_PASSWORD`: PostgreSQL password (default: postgres)
+- `DB_USERNAME`: PostgreSQL username
+- `DB_PASSWORD`: PostgreSQL password
 - Database URL: `jdbc:postgresql://localhost:5432/autoapply`
 

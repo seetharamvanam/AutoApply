@@ -35,19 +35,14 @@ cd backend
 
 ## Common Gradle Commands
 
-### Build all services
+### Build backend
 ```bash
 ./gradlew build -x test
 ```
 
-### Run a specific service
+### Run the unified service
 ```bash
-./gradlew :gateway-service:bootRun
-./gradlew :auth-service:bootRun
-./gradlew :profile-service:bootRun
-./gradlew :job-parser-service:bootRun
-./gradlew :resume-tailor-service:bootRun
-./gradlew :application-tracker-service:bootRun
+./gradlew :unified-service:bootRun
 ```
 
 ### Clean build
@@ -70,7 +65,7 @@ cd backend
 - `settings.gradle` - Defines all subprojects
 - `build.gradle` - Root build file with common configuration
 - `gradle.properties` - Gradle configuration properties
-- Each service has its own `build.gradle` file
+- Each module has its own `build.gradle` file
 
 ## Migrating from Maven
 

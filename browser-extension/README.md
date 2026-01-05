@@ -12,8 +12,13 @@
 1. Click the extension icon in your browser toolbar
 2. Enter your API token (JWT token from login)
 3. Navigate to a job application page
-4. Click "Fill Application Form" to auto-fill form fields
-5. Click "Analyze Job Page" to extract and analyze job description
+4. Click "Auto Apply (Supervised)" to:
+   - Fill detected fields
+   - Highlight missing required fields
+   - Show an on-page review overlay
+   - Click Next/Submit only after your confirmation
+5. (Optional) Click "Fill Application Form" to fill only (no Next/Submit)
+6. (Optional) Click "Analyze Job Page" to extract and analyze job description
 
 ## Development
 

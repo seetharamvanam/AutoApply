@@ -6,17 +6,14 @@ import com.autoapply.auth.dto.LoginRequest;
 import com.autoapply.auth.dto.RegisterRequest;
 import com.autoapply.auth.dto.ResetPasswordRequest;
 import com.autoapply.auth.service.AuthService;
+import com.autoapply.common.web.MessageResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000")
 public class AuthController {
     private final AuthService authService;
 
@@ -37,26 +34,15 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
-        try {
-            authService.forgotPassword(request);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "If an account with that email exists, a password reset link has been sent.");
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            // Return the same message for security (don't reveal if email exists)
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "If an account with that email exists, a password reset link has been sent.");
-            return ResponseEntity.ok(response);
-        }
+    public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request);
+        return ResponseEntity.ok(new MessageResponse("If an account with that email exists, a password reset link has been sent."));
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Password has been reset successfully");
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new MessageResponse("Password has been reset successfully"));
     }
 }
 

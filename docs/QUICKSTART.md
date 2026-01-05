@@ -70,10 +70,10 @@ psql -U postgres -d autoapply -f database/migrations/001_initial_schema.sql
 
 ### 4. Environment Configuration
 
-Copy `.env.example` to `.env` and update with your values:
+Copy `env.example` to `.env` and update with your values:
 
 ```bash
-cp .env.example .env
+cp env.example .env
 ```
 
 Edit `.env`:
@@ -108,60 +108,11 @@ You can use any image editor or online icon generator.
 
 ### Option 2: Start Services Manually
 
-**Backend Services** (run each in a separate terminal):
+**Backend** (unified Spring Boot service):
 
-**Using Gradle Wrapper:**
 ```bash
-# Terminal 1 - Gateway Service
 cd backend
-./gradlew :gateway-service:bootRun
-
-# Terminal 2 - Auth Service
-cd backend
-./gradlew :auth-service:bootRun
-
-# Terminal 3 - Profile Service
-cd backend
-./gradlew :profile-service:bootRun
-
-# Terminal 4 - Job Parser Service
-cd backend
-./gradlew :job-parser-service:bootRun
-
-# Terminal 5 - Resume Tailor Service
-cd backend
-./gradlew :resume-tailor-service:bootRun
-
-# Terminal 6 - Application Tracker Service
-cd backend
-./gradlew :application-tracker-service:bootRun
-```
-
-**Using Installed Gradle:**
-```bash
-# Terminal 1 - Gateway Service
-cd backend
-gradle :gateway-service:bootRun
-
-# Terminal 2 - Auth Service
-cd backend
-gradle :auth-service:bootRun
-
-# Terminal 3 - Profile Service
-cd backend
-gradle :profile-service:bootRun
-
-# Terminal 4 - Job Parser Service
-cd backend
-gradle :job-parser-service:bootRun
-
-# Terminal 5 - Resume Tailor Service
-cd backend
-gradle :resume-tailor-service:bootRun
-
-# Terminal 6 - Application Tracker Service
-cd backend
-gradle :application-tracker-service:bootRun
+./gradlew :unified-service:bootRun
 ```
 
 **Frontend:**
@@ -172,12 +123,7 @@ npm run dev
 
 ## Service Ports
 
-- Gateway Service: `http://localhost:8080`
-- Auth Service: `http://localhost:8081`
-- Profile Service: `http://localhost:8082`
-- Job Parser Service: `http://localhost:8083`
-- Resume Tailor Service: `http://localhost:8084`
-- Application Tracker Service: `http://localhost:8085`
+- Unified Service: `http://localhost:8080`
 - Frontend: `http://localhost:3000`
 
 ## Browser Extension Setup
@@ -239,8 +185,8 @@ If a port is already in use, either:
 - Verify database exists: `psql -U postgres -l`
 
 ### Frontend Can't Connect to Backend
-- Ensure all backend services are running
-- Check CORS configuration in gateway-service
+- Ensure the unified backend service is running
+- Check CORS configuration (`cors.*`) in `backend/unified-service/src/main/resources/application.yml`
 - Verify API proxy in `frontend/vite.config.js`
 
 ### Browser Extension Not Working
@@ -252,7 +198,7 @@ If a port is already in use, either:
 
 - Read [ROADMAP.md](./ROADMAP.md) for development plan
 - Check [README.md](../README.md) for architecture details
-- Review API documentation in each service
+- Review API endpoints in the unified service (`/api/**`)
 
 ## Getting Help
 

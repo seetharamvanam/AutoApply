@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    # Dev-only convenience default. Override via DB_PASSWORD (recommended).
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    com.autoapply: DEBUG
+
+

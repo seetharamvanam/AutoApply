@@ -43,12 +43,12 @@ mvn clean install
 ### Running Services
 **Maven:**
 ```bash
-mvn spring-boot:run -pl gateway-service
+mvn spring-boot:run
 ```
 
 **Gradle:**
 ```bash
-./gradlew :gateway-service:bootRun
+./gradlew :unified-service:bootRun
 ```
 
 ### Project Structure
@@ -83,7 +83,7 @@ mvn spring-boot:run -pl gateway-service
 3. **Run a service**:
    ```bash
    cd backend
-   ./gradlew :auth-service:bootRun
+   ./gradlew :unified-service:bootRun
    ```
 
 ## Troubleshooting
@@ -105,5 +105,5 @@ If you get "Could not find or load main class org.gradle.wrapper.GradleWrapperMa
 
 ## Migration Complete! 🎉
 
-All services have been successfully migrated to Gradle. The project structure and functionality remain the same, only the build tool has changed.
+The backend has been successfully migrated to Gradle. The project structure and functionality remain the same; only the build tool has changed.
 

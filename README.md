@@ -7,7 +7,6 @@ AutoApply automates job applications for users, reducing application time from 3
 - **Backend**: Spring Boot unified service (monolithic architecture)
 - **Frontend**: React + TailwindCSS
 - **Database**: PostgreSQL
-- **Cache**: Redis (optional)
 - **Auth**: JWT
 - **Browser Extension**: Chrome/Edge extension for auto-filling forms
 - **Build Tool**: Gradle
@@ -34,102 +33,78 @@ AutoApply/
 - Java 17+
 - Node.js 18+
 - PostgreSQL 14+
-- Redis 7+ (optional)
-- Gradle 8.5+ (or use the included Gradle wrapper)
+- Gradle (optional; the repo includes the Gradle wrapper so you do not need to install Gradle)
 
-### Automated Setup
+### 1) Configure environment (.env)
+
+Create a `.env` file in the repo root:
 
 **Windows (PowerShell):**
 ```powershell
-.\scripts\setup.ps1
-.\database\setup-database.ps1
+Copy-Item env.example .env
 ```
 
-**Linux/Mac (Bash):**
+**macOS/Linux (Bash):**
 ```bash
-chmod +x scripts/setup.sh database/setup-database.sh
-./scripts/setup.sh
-./database/setup-database.sh
+cp env.example .env
 ```
 
-### Manual Setup
+Edit `.env` and set at minimum:
+- `DB_USERNAME`
+- `DB_PASSWORD`
+- `JWT_SECRET`
 
-1. **Backend Setup**
-   ```bash
-   cd backend
-   # Using Gradle wrapper (recommended)
-   ./gradlew build -x test
-   
-   # Or using installed Gradle
-   gradle build -x test
-   ```
+### 2) Create DB and run migrations
 
-2. **Frontend Setup**
-   ```bash
-   cd frontend
-   npm install
-   ```
+Create the database:
 
-3. **Database Setup**
-   ```bash
-   psql -U postgres -c "CREATE DATABASE autoapply;"
-   psql -U postgres -d autoapply -f database/migrations/001_initial_schema.sql
-   ```
+```bash
+psql -U postgres -c "CREATE DATABASE autoapply;"
+```
 
-4. **Environment Configuration**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your database credentials and JWT secret
-   ```
+Apply migrations in order (run from the repo root):
 
-5. **Browser Extension Icons**
-   - Open `browser-extension/create-icons.html` in a browser
-   - Click "Download All Icons"
-   - Save the icons to `browser-extension/icons/`
+```bash
+psql -U postgres -d autoapply -f database/migrations/001_initial_schema.sql
+psql -U postgres -d autoapply -f database/migrations/002_add_password_reset_tokens.sql
+psql -U postgres -d autoapply -f database/migrations/003_update_job_application_statuses.sql
+```
 
 ## Running the Application
 
-### Start All Services (Automated)
+### Backend (Spring Boot unified service)
 
-**Windows:**
+**Windows (PowerShell):**
 ```powershell
-.\scripts\start-services.ps1
-```
-
-**Linux/Mac:**
-```bash
-./scripts/start-services.sh
-```
-
-### Start Services Manually
-
-**Backend Service** (unified service):
-```bash
-# Using Gradle wrapper (recommended)
 cd backend
+.\gradlew.bat :unified-service:build -x test
+.\gradlew.bat :unified-service:bootRun
+```
+
+**macOS/Linux (Bash):**
+```bash
+cd backend
+./gradlew :unified-service:build -x test
 ./gradlew :unified-service:bootRun
-```
-
-Or using installed Gradle:
-```bash
-cd backend
-gradle :unified-service:bootRun
-```
-
-Or use the startup script:
-```bash
-# Windows
-.\scripts\start-services.ps1
-
-# Linux/Mac
-./scripts/start-services.sh
 ```
 
 **Frontend:**
 ```bash
 cd frontend
+npm install
 npm run dev
 ```
+
+### Browser Extension Icons (one-time)
+
+- Open `browser-extension/create-icons.html` in a browser
+- Click "Download All Icons"
+- Save the icons to `browser-extension/icons/`
+
+### Notes
+
+- The backend reads variables from `.env` on startup (for local development).
+- If the frontend can’t reach the backend, confirm the backend is running on `http://localhost:8080` and check the proxy in `frontend/vite.config.js`.
 
 ## Service Ports
 
@@ -153,7 +128,8 @@ npm run dev
 
 4. Select the `browser-extension` folder
 
-5. Click the extension icon and enter your JWT token (get it from login)
+5. Click the extension icon and login or enter your JWT token
+6. Click "Auto Apply (Supervised)" to fill fields, review on-page, then proceed to Next/Submit
 
 ## Features
 
@@ -164,11 +140,12 @@ npm run dev
 - Resume tailoring (AI stubbed, ready for integration)
 - Application tracking
 - Browser extension for auto-fill
-- API Gateway with routing
+- **🤖 Intelligent Form Automation** - AI-powered page analysis and automated form filling
 
 ### 🚧 Ready for Integration
 - AI-powered job parsing (NLP models)
 - AI-powered resume tailoring
+- **AI-powered page analysis** (OpenAI GPT-4 Vision, Claude, etc.)
 - ATS scoring algorithm
 - Profile enhancement suggestions
 
@@ -178,7 +155,6 @@ See [ROADMAP.md](./docs/ROADMAP.md) for detailed development plan.
 
 ## Documentation
 
-- [QUICKSTART.md](./docs/QUICKSTART.md) - Quick start guide
 - [ROADMAP.md](./docs/ROADMAP.md) - Development roadmap
 - [database/README.md](./database/README.md) - Database setup
 - [backend/GRADLE_SETUP.md](./backend/GRADLE_SETUP.md) - Gradle setup guide
@@ -200,6 +176,9 @@ See [ROADMAP.md](./docs/ROADMAP.md) for detailed development plan.
 
 ### Resume Tailor
 - `POST /api/resumes/tailor` - Tailor resume to job
+
+### Form Automation (NEW)
+- `POST /api/automation/analyze` - Analyze page and generate automation plan
 
 ### Applications
 - `GET /api/applications/user/{userId}` - Get user applications

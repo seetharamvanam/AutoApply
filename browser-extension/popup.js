@@ -1,7 +1,7 @@
 const API_BASE_URL = 'http://localhost:8080';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const token = await getStoredToken();
+  const { token } = await getStoredAuth();
   
   if (token) {
     showMainSection();
@@ -14,6 +14,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('saveToken').addEventListener('click', saveToken);
   document.getElementById('fillForm').addEventListener('click', fillForm);
   document.getElementById('analyzePage').addEventListener('click', analyzePage);
+  const autoApplyBtn = document.getElementById('autoApply');
+  if (autoApplyBtn) {
+    autoApplyBtn.addEventListener('click', autoApply);
+  }
+  const demoBtn = document.getElementById('demoAutoApply');
+  if (demoBtn) {
+    demoBtn.addEventListener('click', demoAutoApply);
+  }
   document.getElementById('logoutBtn').addEventListener('click', logout);
   
   // Allow Enter key to submit login
@@ -24,9 +32,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 });
 
-async function getStoredToken() {
-  const result = await chrome.storage.local.get(['authToken']);
-  return result.authToken;
+async function getStoredAuth() {
+  const result = await chrome.storage.local.get(['authToken', 'authUserId', 'authEmail']);
+  return {
+    token: result.authToken || null,
+    userId: result.authUserId || null,
+    email: result.authEmail || null
+  };
 }
 
 async function login() {
@@ -58,7 +70,9 @@ async function login() {
     const token = data.token;
     
     if (token) {
-      await chrome.storage.local.set({ authToken: token });
+      const userId = data.userId || getUserIdFromToken(token);
+      const storedEmail = data.email || getEmailFromToken(token) || email;
+      await chrome.storage.local.set({ authToken: token, authUserId: userId, authEmail: storedEmail });
       showMainSection();
       showStatus('Signed in successfully!', 'success');
       // Clear password field for security
@@ -100,7 +114,11 @@ async function saveToken() {
       throw new Error('Invalid token');
     }
     
-    await chrome.storage.local.set({ authToken: token });
+    await chrome.storage.local.set({ 
+      authToken: token, 
+      authUserId: getUserIdFromToken(token),
+      authEmail: getEmailFromToken(token)
+    });
     showMainSection();
     showStatus('Token saved successfully', 'success');
     document.getElementById('apiToken').value = '';
@@ -130,7 +148,7 @@ function showStatus(message, type) {
 }
 
 async function fillForm() {
-  const token = await getStoredToken();
+  const { token } = await getStoredAuth();
   if (!token) {
     showStatus('Please sign in first', 'error');
     showLoginSection();
@@ -159,7 +177,7 @@ async function fillForm() {
 }
 
 async function analyzePage() {
-  const token = await getStoredToken();
+  const { token } = await getStoredAuth();
   if (!token) {
     showStatus('Please sign in first', 'error');
     showLoginSection();
@@ -187,8 +205,102 @@ async function analyzePage() {
   }
 }
 
+async function autoApply() {
+  const { token, userId: storedUserId, email: storedEmail } = await getStoredAuth();
+  if (!token) {
+    showStatus('Please sign in first', 'error');
+    showLoginSection();
+    return;
+  }
+
+  try {
+    showStatus('Filling fields (supervised)...', 'info');
+    
+    // Get user ID from storage or token
+    const userId = storedUserId || getUserIdFromToken(token);
+    if (!userId) {
+      throw new Error('Failed to get user ID from token');
+    }
+    
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    
+    chrome.tabs.sendMessage(tab.id, {
+      action: 'autoApplySupervised',
+      token: token,
+      apiUrl: API_BASE_URL,
+      userId: userId,
+      userEmail: storedEmail || getEmailFromToken(token)
+    }, (response) => {
+      if (chrome.runtime.lastError) {
+        showStatus('Error: ' + chrome.runtime.lastError.message, 'error');
+      } else if (response && response.success) {
+        showStatus('Review overlay opened on the page. Verify fields, then click Proceed.', 'success');
+      } else {
+        showStatus(response?.error || 'Failed to auto-apply', 'error');
+      }
+    });
+  } catch (error) {
+    showStatus('Error: ' + error.message, 'error');
+  }
+}
+
+async function demoAutoApply() {
+  try {
+    showStatus('Running demo fill (no backend)...', 'info');
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const mockProfile = {
+      fullName: 'Jane Doe',
+      phone: '+1 (555) 555-1234',
+      location: 'San Francisco, CA',
+      linkedinUrl: 'https://linkedin.com/in/janedoe',
+      portfolioUrl: 'https://janedoe.dev',
+      summary: 'Full-stack engineer with experience in React, Java, and system design.'
+    };
+
+    chrome.tabs.sendMessage(tab.id, {
+      action: 'autoApplySupervised',
+      token: null,
+      apiUrl: API_BASE_URL,
+      userId: null,
+      userEmail: 'jane.doe@example.com',
+      mockProfile
+    }, (response) => {
+      if (chrome.runtime.lastError) {
+        showStatus('Error: ' + chrome.runtime.lastError.message, 'error');
+      } else if (response && response.success) {
+        showStatus('Demo overlay opened on the page. Verify fields, then click Proceed.', 'success');
+      } else {
+        showStatus(response?.error || 'Demo auto-apply failed', 'error');
+      }
+    });
+  } catch (error) {
+    showStatus('Error: ' + error.message, 'error');
+  }
+}
+
+function getUserIdFromToken(token) {
+  try {
+    // Decode JWT token (simplified - in production use a proper JWT library)
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.userId || payload.sub || payload.id;
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return null;
+  }
+}
+
+function getEmailFromToken(token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.email || payload.sub || null;
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return null;
+  }
+}
+
 async function logout() {
-  await chrome.storage.local.remove(['authToken']);
+  await chrome.storage.local.remove(['authToken', 'authUserId', 'authEmail']);
   showLoginSection();
   document.getElementById('email').value = '';
   document.getElementById('password').value = '';
