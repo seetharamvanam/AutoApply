@@ -1,309 +1,118 @@
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = 'http://localhost:8080/api';
 
+// DOM elements
+const loginContainer = document.getElementById('login-container');
+const mainContainer = document.getElementById('main-container');
+const loginForm = document.getElementById('login-form');
+const logoutBtn = document.getElementById('logout-btn');
+const jobsList = document.getElementById('jobs-list');
+const loginError = document.getElementById('login-error');
+
+// Check authentication on load
 document.addEventListener('DOMContentLoaded', async () => {
-  const { token } = await getStoredAuth();
-  
-  if (token) {
-    showMainSection();
-  } else {
-    showLoginSection();
-  }
-
-  document.getElementById('loginBtn').addEventListener('click', login);
-  document.getElementById('toggleTokenMode').addEventListener('click', toggleTokenMode);
-  document.getElementById('saveToken').addEventListener('click', saveToken);
-  document.getElementById('fillForm').addEventListener('click', fillForm);
-  document.getElementById('analyzePage').addEventListener('click', analyzePage);
-  const autoApplyBtn = document.getElementById('autoApply');
-  if (autoApplyBtn) {
-    autoApplyBtn.addEventListener('click', autoApply);
-  }
-  const demoBtn = document.getElementById('demoAutoApply');
-  if (demoBtn) {
-    demoBtn.addEventListener('click', demoAutoApply);
-  }
-  document.getElementById('logoutBtn').addEventListener('click', logout);
-  
-  // Allow Enter key to submit login
-  document.getElementById('password').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      login();
+    const token = await getToken();
+    if (token) {
+        showMainContainer();
+        loadJobs();
+    } else {
+        showLoginContainer();
     }
-  });
 });
 
-async function getStoredAuth() {
-  const result = await chrome.storage.local.get(['authToken', 'authUserId', 'authEmail']);
-  return {
-    token: result.authToken || null,
-    userId: result.authUserId || null,
-    email: result.authEmail || null
-  };
+// Login form handler
+loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    loginError.textContent = '';
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Login failed');
+        }
+
+        const data = await response.json();
+        await saveToken(data.accessToken);
+        showMainContainer();
+        loadJobs();
+    } catch (error) {
+        loginError.textContent = error.message;
+    }
+});
+
+// Logout handler
+logoutBtn.addEventListener('click', async () => {
+    await chrome.storage.local.remove('token');
+    showLoginContainer();
+    loginForm.reset();
+});
+
+// Load jobs
+async function loadJobs() {
+    const token = await getToken();
+    if (!token) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/jobs`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to load jobs');
+        }
+
+        const jobs = await response.json();
+        displayJobs(jobs);
+    } catch (error) {
+        jobsList.innerHTML = `<div class="error">Failed to load jobs: ${error.message}</div>`;
+    }
 }
 
-async function login() {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  
-  if (!email || !password) {
-    showStatus('Please enter email and password', 'error');
-    return;
-  }
-
-  try {
-    showStatus('Signing in...', 'info');
-    
-    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password })
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Login failed' }));
-      throw new Error(error.message || 'Invalid email or password');
+// Display jobs
+function displayJobs(jobs) {
+    if (jobs.length === 0) {
+        jobsList.innerHTML = '<div>No job applications yet.</div>';
+        return;
     }
 
-    const data = await response.json();
-    const token = data.token;
-    
-    if (token) {
-      const userId = data.userId || getUserIdFromToken(token);
-      const storedEmail = data.email || getEmailFromToken(token) || email;
-      await chrome.storage.local.set({ authToken: token, authUserId: userId, authEmail: storedEmail });
-      showMainSection();
-      showStatus('Signed in successfully!', 'success');
-      // Clear password field for security
-      document.getElementById('password').value = '';
-    } else {
-      throw new Error('No token received from server');
-    }
-  } catch (error) {
-    console.error('Login error:', error);
-    showStatus(error.message || 'Login failed. Check if backend is running.', 'error');
-  }
+    jobsList.innerHTML = jobs.map(job => `
+        <div class="job-item">
+            <div class="job-title">${job.title}</div>
+            <div class="job-company">${job.company}</div>
+            <div style="font-size: 12px; color: #666; margin-top: 4px;">${job.status}</div>
+        </div>
+    `).join('');
 }
 
-function toggleTokenMode() {
-  const tokenSection = document.getElementById('tokenSection');
-  const isHidden = tokenSection.classList.contains('hidden');
-  tokenSection.classList.toggle('hidden');
-  document.getElementById('toggleTokenMode').textContent = 
-    isHidden ? 'Or use email/password' : 'Or use API token';
+// Show/hide containers
+function showLoginContainer() {
+    loginContainer.classList.add('active');
+    mainContainer.classList.remove('active');
 }
 
-async function saveToken() {
-  const token = document.getElementById('apiToken').value;
-  if (!token) {
-    showStatus('Please enter a token', 'error');
-    return;
-  }
-  
-  try {
-    // Validate token by making a test request
-    const response = await fetch(`${API_BASE_URL}/api/profile/1`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    
-    // Even if profile doesn't exist, 401 means invalid token, 404 means valid token but no profile
-    if (response.status === 401) {
-      throw new Error('Invalid token');
-    }
-    
-    await chrome.storage.local.set({ 
-      authToken: token, 
-      authUserId: getUserIdFromToken(token),
-      authEmail: getEmailFromToken(token)
-    });
-    showMainSection();
-    showStatus('Token saved successfully', 'success');
-    document.getElementById('apiToken').value = '';
-  } catch (error) {
-    showStatus(error.message || 'Invalid token', 'error');
-  }
+function showMainContainer() {
+    loginContainer.classList.remove('active');
+    mainContainer.classList.add('active');
 }
 
-function showLoginSection() {
-  document.getElementById('loginSection').classList.remove('hidden');
-  document.getElementById('mainSection').classList.add('hidden');
+// Token management
+async function getToken() {
+    const result = await chrome.storage.local.get('token');
+    return result.token;
 }
 
-function showMainSection() {
-  document.getElementById('loginSection').classList.add('hidden');
-  document.getElementById('mainSection').classList.remove('hidden');
+async function saveToken(token) {
+    await chrome.storage.local.set({ token });
 }
-
-function showStatus(message, type) {
-  const statusDiv = document.getElementById('status');
-  statusDiv.textContent = message;
-  statusDiv.className = `status ${type}`;
-  statusDiv.classList.remove('hidden');
-  setTimeout(() => {
-    statusDiv.classList.add('hidden');
-  }, 3000);
-}
-
-async function fillForm() {
-  const { token } = await getStoredAuth();
-  if (!token) {
-    showStatus('Please sign in first', 'error');
-    showLoginSection();
-    return;
-  }
-
-  try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    
-    chrome.tabs.sendMessage(tab.id, {
-      action: 'fillForm',
-      token: token,
-      apiUrl: API_BASE_URL
-    }, (response) => {
-      if (chrome.runtime.lastError) {
-        showStatus('Error: ' + chrome.runtime.lastError.message, 'error');
-      } else if (response && response.success) {
-        showStatus('Form filled successfully!', 'success');
-      } else {
-        showStatus('Failed to fill form', 'error');
-      }
-    });
-  } catch (error) {
-    showStatus('Error: ' + error.message, 'error');
-  }
-}
-
-async function analyzePage() {
-  const { token } = await getStoredAuth();
-  if (!token) {
-    showStatus('Please sign in first', 'error');
-    showLoginSection();
-    return;
-  }
-
-  try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    
-    chrome.tabs.sendMessage(tab.id, {
-      action: 'analyzePage',
-      token: token,
-      apiUrl: API_BASE_URL
-    }, (response) => {
-      if (chrome.runtime.lastError) {
-        showStatus('Error: ' + chrome.runtime.lastError.message, 'error');
-      } else if (response && response.success) {
-        showStatus('Page analyzed! Check console for details.', 'success');
-      } else {
-        showStatus('Failed to analyze page', 'error');
-      }
-    });
-  } catch (error) {
-    showStatus('Error: ' + error.message, 'error');
-  }
-}
-
-async function autoApply() {
-  const { token, userId: storedUserId, email: storedEmail } = await getStoredAuth();
-  if (!token) {
-    showStatus('Please sign in first', 'error');
-    showLoginSection();
-    return;
-  }
-
-  try {
-    showStatus('Filling fields (supervised)...', 'info');
-    
-    // Get user ID from storage or token
-    const userId = storedUserId || getUserIdFromToken(token);
-    if (!userId) {
-      throw new Error('Failed to get user ID from token');
-    }
-    
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    
-    chrome.tabs.sendMessage(tab.id, {
-      action: 'autoApplySupervised',
-      token: token,
-      apiUrl: API_BASE_URL,
-      userId: userId,
-      userEmail: storedEmail || getEmailFromToken(token)
-    }, (response) => {
-      if (chrome.runtime.lastError) {
-        showStatus('Error: ' + chrome.runtime.lastError.message, 'error');
-      } else if (response && response.success) {
-        showStatus('Review overlay opened on the page. Verify fields, then click Proceed.', 'success');
-      } else {
-        showStatus(response?.error || 'Failed to auto-apply', 'error');
-      }
-    });
-  } catch (error) {
-    showStatus('Error: ' + error.message, 'error');
-  }
-}
-
-async function demoAutoApply() {
-  try {
-    showStatus('Running demo fill (no backend)...', 'info');
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const mockProfile = {
-      fullName: 'Jane Doe',
-      phone: '+1 (555) 555-1234',
-      location: 'San Francisco, CA',
-      linkedinUrl: 'https://linkedin.com/in/janedoe',
-      portfolioUrl: 'https://janedoe.dev',
-      summary: 'Full-stack engineer with experience in React, Java, and system design.'
-    };
-
-    chrome.tabs.sendMessage(tab.id, {
-      action: 'autoApplySupervised',
-      token: null,
-      apiUrl: API_BASE_URL,
-      userId: null,
-      userEmail: 'jane.doe@example.com',
-      mockProfile
-    }, (response) => {
-      if (chrome.runtime.lastError) {
-        showStatus('Error: ' + chrome.runtime.lastError.message, 'error');
-      } else if (response && response.success) {
-        showStatus('Demo overlay opened on the page. Verify fields, then click Proceed.', 'success');
-      } else {
-        showStatus(response?.error || 'Demo auto-apply failed', 'error');
-      }
-    });
-  } catch (error) {
-    showStatus('Error: ' + error.message, 'error');
-  }
-}
-
-function getUserIdFromToken(token) {
-  try {
-    // Decode JWT token (simplified - in production use a proper JWT library)
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.userId || payload.sub || payload.id;
-  } catch (error) {
-    console.error('Error decoding token:', error);
-    return null;
-  }
-}
-
-function getEmailFromToken(token) {
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.email || payload.sub || null;
-  } catch (error) {
-    console.error('Error decoding token:', error);
-    return null;
-  }
-}
-
-async function logout() {
-  await chrome.storage.local.remove(['authToken', 'authUserId', 'authEmail']);
-  showLoginSection();
-  document.getElementById('email').value = '';
-  document.getElementById('password').value = '';
-  showStatus('Signed out successfully', 'success');
-}
-

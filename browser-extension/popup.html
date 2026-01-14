@@ -1,120 +1,121 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <style>
-    body {
-      width: 350px;
-      padding: 16px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
-    h2 {
-      margin: 0 0 16px 0;
-      color: #2563eb;
-      font-size: 18px;
-    }
-    .status {
-      padding: 12px;
-      border-radius: 6px;
-      margin-bottom: 12px;
-      font-size: 14px;
-    }
-    .status.success {
-      background-color: #d1fae5;
-      color: #065f46;
-    }
-    .status.error {
-      background-color: #fee2e2;
-      color: #991b1b;
-    }
-    .status.info {
-      background-color: #dbeafe;
-      color: #1e40af;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      background-color: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      margin-bottom: 8px;
-    }
-    button:hover {
-      background-color: #1d4ed8;
-    }
-    button:disabled {
-      background-color: #9ca3af;
-      cursor: not-allowed;
-    }
-    .input-group {
-      margin-bottom: 12px;
-    }
-    label {
-      display: block;
-      margin-bottom: 4px;
-      font-size: 12px;
-      font-weight: 500;
-      color: #374151;
-    }
-    input {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #d1d5db;
-      border-radius: 4px;
-      font-size: 14px;
-      box-sizing: border-box;
-    }
-    input:focus {
-      outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-    }
-    .hidden {
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            width: 350px;
+            padding: 16px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+        }
+        .container {
+            display: none;
+        }
+        .container.active {
+            display: block;
+        }
+        h2 {
+            margin: 0 0 16px 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        .success {
+            color: #28a745;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        .jobs-list {
+            margin-top: 16px;
+        }
+        .job-item {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        .job-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .job-company {
+            color: #666;
+            font-size: 14px;
+        }
+        .logout-btn {
+            margin-top: 16px;
+            background-color: #dc3545;
+        }
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
 </head>
 <body>
-  <h2>AutoApply</h2>
-  
-  <div id="loginSection">
-    <div class="input-group">
-      <label>Email</label>
-      <input type="email" id="email" placeholder="Enter your email">
+    <!-- Login Form -->
+    <div id="login-container" class="container active">
+        <h2>AutoApply Login</h2>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit">Login</button>
+            <div id="login-error" class="error"></div>
+        </form>
     </div>
-    <div class="input-group">
-      <label>Password</label>
-      <input type="password" id="password" placeholder="Enter your password">
-    </div>
-    <button id="loginBtn">Sign In</button>
-    <div style="text-align: center; margin-top: 8px;">
-      <button type="button" id="toggleTokenMode" style="background: transparent; color: #2563eb; padding: 4px; font-size: 12px; text-decoration: underline;">
-        Or use API token
-      </button>
-    </div>
-    <div id="tokenSection" class="hidden" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
-      <div class="input-group">
-        <label>API Token</label>
-        <input type="password" id="apiToken" placeholder="Enter your API token">
-      </div>
-      <button id="saveToken">Save Token</button>
-    </div>
-  </div>
 
-  <div id="mainSection" class="hidden">
-    <div id="status" class="status info hidden"></div>
-    <button id="autoApply" style="background-color: #10b981; font-weight: 600;">Auto Apply (Supervised)</button>
-    <button id="demoAutoApply" style="background-color: #0ea5e9; font-weight: 600;">Demo Auto Apply (No Backend)</button>
-    <button id="fillForm">Fill Application Form</button>
-    <button id="analyzePage">Analyze Job Page</button>
-    <button id="logoutBtn" style="background-color: #ef4444; margin-top: 8px;">Sign Out</button>
-  </div>
+    <!-- Main Container (after login) -->
+    <div id="main-container" class="container">
+        <h2>My Job Applications</h2>
+        <div id="jobs-list" class="jobs-list"></div>
+        <button id="logout-btn" class="logout-btn">Logout</button>
+    </div>
 
-  <script src="popup.js"></script>
+    <script src="popup.js"></script>
 </body>
 </html>
-

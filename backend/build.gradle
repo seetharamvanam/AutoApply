@@ -1,223 +1,52 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.2.0' apply false
+    id 'org.springframework.boot' version '3.2.0'
     id 'io.spring.dependency-management' version '1.1.4'
 }
 
-allprojects {
-    group = 'com.autoapply'
-    version = '1.0.0-SNAPSHOT'
-    
-    repositories {
-        mavenCentral()
+group = 'com.autoapply'
+version = '1.0.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
     }
 }
 
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'org.springframework.boot'
-    apply plugin: 'io.spring.dependency-management'
+dependencies {
+    // Spring Boot Starters
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     
-    java {
-        sourceCompatibility = '17'
-        targetCompatibility = '17'
-    }
+    // Database
+    runtimeOnly 'org.postgresql:postgresql'
     
-    configurations {
-        compileOnly {
-            extendsFrom annotationProcessor
-        }
-    }
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
     
-    dependencyManagement {
-        imports {
-            mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
-            mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2023.0.0'
-        }
-    }
+    // Lombok (optional but helpful)
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
     
-    tasks.named('test') {
-        useJUnitPlatform()
-    }
-    
-    // Configure bootRun for smooth server lifecycle management
-    tasks.named('bootRun') {
-        // Enable Spring Boot DevTools-like features
-        sourceResources sourceSets.main
-        
-        // JVM arguments for graceful shutdown and better performance
-        jvmArgs = [
-            // Graceful shutdown configuration
-            '-Dspring.lifecycle.timeout-per-shutdown-phase=30s',
-            '-Dserver.shutdown=graceful',
-            
-            // Memory management
-            '-Xms512m',
-            '-Xmx1024m',
-            
-            // GC settings for better performance
-            '-XX:+UseG1GC',
-            '-XX:MaxGCPauseMillis=200',
-            '-XX:+UseStringDeduplication',
-            
-            // JVM optimizations
-            '-XX:+OptimizeStringConcat',
-            '-XX:+UseCompressedOops',
-            '-XX:+UseCompressedClassPointers',
-            
-            // Enable JMX for monitoring (optional, can be disabled in production)
-            '-Dcom.sun.management.jmxremote',
-            '-Dcom.sun.management.jmxremote.port=0',
-            '-Dcom.sun.management.jmxremote.authenticate=false',
-            '-Dcom.sun.management.jmxremote.ssl=false',
-            
-            // File encoding
-            '-Dfile.encoding=UTF-8',
-            '-Duser.timezone=UTC',
-            
-            // Temp directory (fix Windows permission issue - use user temp instead of C:\Windows\)
-            '-Djava.io.tmpdir=' + System.getProperty('user.home') + File.separator + '.autoapply' + File.separator + 'tmp'
-        ]
-        
-        // Standard input handling (prevents blocking)
-        standardInput = System.in
-        
-        // Environment variables
-        environment = [
-            'SPRING_PROFILES_ACTIVE': project.hasProperty('profile') ? project.property('profile') : 'dev'
-        ]
-        
-        // System properties
-        systemProperty 'spring.config.additional-location', 
-            project.file('src/main/resources/application.yml').absolutePath
-        
-        // Fork options for better process management
-        doFirst {
-            // Ensure temp directory exists
-            def tempDir = new File(System.getProperty('user.home'), '.autoapply/tmp')
-            tempDir.mkdirs()
-            
-            println "Starting ${project.name} with graceful shutdown enabled..."
-            println "JVM Args: ${jvmArgs.join(' ')}"
-        }
-        
-        // Add shutdown hook for graceful termination
-        doLast {
-            println "Service ${project.name} is shutting down..."
-        }
-    }
-    
-    // Task to check if service is running
-    task checkService {
-        group = 'application'
-        description = 'Check if the service is running'
-        doLast {
-            def port = project.hasProperty('servicePort') ? project.property('servicePort') : '8080'
-            try {
-                def connection = new URL("http://localhost:${port}/actuator/health").openConnection()
-                connection.setConnectTimeout(2000)
-                connection.setReadTimeout(2000)
-                connection.connect()
-                
-                if (connection.responseCode == 200) {
-                    println "✅ ${project.name} is running and healthy on port ${port}"
-                } else {
-                    println "⚠️  ${project.name} responded with status ${connection.responseCode}"
-                }
-            } catch (Exception e) {
-                println "❌ ${project.name} is not responding on port ${port}: ${e.message}"
-            }
-        }
-    }
-    
-    // Task to wait for service to be ready
-    task waitForService {
-        group = 'application'
-        description = 'Wait for the service to be ready'
-        doLast {
-            def port = project.hasProperty('servicePort') ? project.property('servicePort') : '8080'
-            def maxAttempts = 60
-            def attempt = 0
-            def ready = false
-            
-            println "Waiting for ${project.name} to be ready on port ${port}..."
-            
-            while (attempt < maxAttempts && !ready) {
-                try {
-                    def connection = new URL("http://localhost:${port}/actuator/health").openConnection()
-                    connection.setConnectTimeout(1000)
-                    connection.setReadTimeout(1000)
-                    connection.connect()
-                    
-                    if (connection.responseCode == 200) {
-                        ready = true
-                        println "✅ ${project.name} is ready!"
-                    }
-                } catch (Exception e) {
-                    attempt++
-                    Thread.sleep(1000)
-                    if (attempt % 5 == 0) {
-                        print "."
-                    }
-                }
-            }
-            
-            if (!ready) {
-                throw new RuntimeException("Service ${project.name} did not become ready within ${maxAttempts} seconds")
-            }
-        }
-    }
-    
-    // Task to gracefully shutdown a running service
-    task gracefulShutdown {
-        group = 'application'
-        description = 'Gracefully shutdown the service via actuator endpoint'
-        doLast {
-            def port = project.hasProperty('servicePort') ? project.property('servicePort') : '8080'
-            try {
-                println "Initiating graceful shutdown for ${project.name} on port ${port}..."
-                def connection = new URL("http://localhost:${port}/actuator/shutdown").openConnection()
-                connection.setRequestMethod('POST')
-                connection.setConnectTimeout(2000)
-                connection.setReadTimeout(2000)
-                connection.connect()
-                
-                if (connection.responseCode == 200) {
-                    println "✅ Graceful shutdown initiated for ${project.name}"
-                } else {
-                    println "⚠️  Shutdown endpoint returned status ${connection.responseCode}"
-                }
-            } catch (Exception e) {
-                println "❌ Could not reach shutdown endpoint for ${project.name}: ${e.message}"
-                println "   Note: Shutdown endpoint requires management.endpoints.web.exposure.include=shutdown"
-            }
-        }
-    }
+    // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
-// Root project tasks for managing the unified service
-task checkPorts {
-    group = 'application'
-    description = 'Check if the unified service port is available'
-    doLast {
-        def port = project.hasProperty('servicePort') ? project.property('servicePort').toString().toInteger() : 8080
-        try {
-            def socket = new java.net.ServerSocket(port)
-            socket.close()
-            println "✅ Port ${port} (unified-service) is available"
-        } catch (Exception e) {
-            throw new RuntimeException("❌ Port ${port} (unified-service) is already in use. Stop the service or change server.port.\n${e.message}")
-        }
-    }
+tasks.named('test') {
+    useJUnitPlatform()
 }
-
-task startAllServices {
-    group = 'application'
-    description = 'Deprecated: start the unified service directly'
-    dependsOn checkPorts
-    doLast {
-        println "⚠️  Run the unified service directly:"
-        println "   ./gradlew :unified-service:bootRun"
-    }
-}
-

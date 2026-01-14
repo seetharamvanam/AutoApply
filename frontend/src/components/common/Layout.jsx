@@ -2,8 +2,6 @@ import { Outlet, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import {
   UserCircleIcon,
-  DocumentTextIcon,
-  BriefcaseIcon,
   ClipboardDocumentListIcon
 } from '@heroicons/react/24/outline'
 
@@ -13,8 +11,6 @@ const Layout = () => {
 
   const navigation = [
     { name: 'Profile', href: '/profile', icon: UserCircleIcon },
-    { name: 'Job Analyzer', href: '/job-analyzer', icon: DocumentTextIcon },
-    { name: 'Resume Tailor', href: '/resume-tailor', icon: BriefcaseIcon },
     { name: 'Applications', href: '/applications', icon: ClipboardDocumentListIcon }
   ]
 

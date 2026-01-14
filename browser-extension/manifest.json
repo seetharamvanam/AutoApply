@@ -1,15 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "AutoApply - Job Application Assistant",
+  "name": "AutoApply - Job Application Tracker",
   "version": "1.0.0",
-  "description": "Automatically fill job application forms with your profile data",
+  "description": "Track and manage your job applications",
   "permissions": [
+    "storage",
     "activeTab",
-    "storage"
+    "tabs"
   ],
   "host_permissions": [
-    "http://localhost:8080/*",
-    "https://*/*"
+    "http://localhost:8080/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -21,7 +21,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": [
+        "https://www.linkedin.com/*",
+        "https://www.indeed.com/*",
+        "https://jobs.github.com/*",
+        "https://stackoverflow.com/jobs/*"
+      ],
       "js": ["content.js"],
       "run_at": "document_idle"
     }
@@ -35,4 +40,3 @@
     "128": "icons/icon128.png"
   }
 }
-

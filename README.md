@@ -1,122 +1,120 @@
-# AutoApply - AI-Powered Job Application Automation System
+# AutoApply
+
+A minimal job application tracking system built with Spring Boot and a Chrome extension.
 
 ## Overview
-AutoApply automates job applications for users, reducing application time from 30-40 minutes to under 2 minutes.
 
-## Architecture
-- **Backend**: Spring Boot unified service (monolithic architecture)
-- **Frontend**: React + TailwindCSS
+AutoApply helps you organize and manage your job applications. Track applications, store job details, and manage your job search from a simple browser extension.
+
+## Tech Stack
+
+- **Backend**: Spring Boot 3.2 (Java 17) with Gradle
 - **Database**: PostgreSQL
-- **Auth**: JWT
-- **Browser Extension**: Chrome/Edge extension for auto-filling forms
-- **Build Tool**: Gradle
+- **Authentication**: JWT + OAuth2 (Google & GitHub)
+- **Browser Extension**: Chrome/Edge extension (Manifest V3)
+
+## Features
+
+### Authentication
+- JWT-based password authentication
+- OAuth2 login with Google & GitHub
+- Secure password hashing (BCrypt)
+- Stateless sessions
+
+### Job Tracking
+- Create and manage job applications
+- Track application status (SAVED, APPLIED, SCREENING, INTERVIEW, etc.)
+- Store job details (title, company, URL, description, notes)
+- View all your applications in one place
+
+### Browser Extension
+- Simple login interface
+- View your job applications
+- Token-based authentication
 
 ## Project Structure
+
 ```
 AutoApply/
-├── backend/              # Spring Boot unified service
-│   └── unified-service/  # Single service with all modules
-│       ├── auth/         # Authentication module
-│       ├── profile/      # User profile module
-│       ├── jobparser/    # Job parsing module
-│       ├── resumetailor/ # Resume tailoring module
-│       └── applicationtracker/ # Application tracking module
-├── frontend/             # React application
-├── browser-extension/    # Chrome extension
-├── database/            # SQL migrations
-└── docs/                # Documentation
+├── backend/                    # Spring Boot application
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/com/autoapply/
+│   │   │   │   ├── auth/        # Authentication (JWT + OAuth2)
+│   │   │   │   │   ├── config/  # Security configuration
+│   │   │   │   │   ├── controller/
+│   │   │   │   │   ├── dto/
+│   │   │   │   │   ├── entity/
+│   │   │   │   │   ├── filter/
+│   │   │   │   │   ├── handler/
+│   │   │   │   │   ├── repository/
+│   │   │   │   │   └── service/
+│   │   │   │   ├── job/         # Job application tracking
+│   │   │   │   │   ├── controller/
+│   │   │   │   │   ├── dto/
+│   │   │   │   │   ├── entity/
+│   │   │   │   │   ├── repository/
+│   │   │   │   │   └── service/
+│   │   │   │   ├── common/      # Exception handling
+│   │   │   │   │   └── exception/
+│   │   │   │   └── AutoApplyApplication.java
+│   │   │   └── resources/
+│   │   │       └── application.properties
+│   │   └── test/
+│   ├── build.gradle
+│   └── settings.gradle
+├── browser-extension/          # Chrome extension
+│   ├── manifest.json
+│   ├── popup.html
+│   ├── popup.js
+│   ├── content.js
+│   ├── background.js
+│   └── icons/
+├── database/
+│   └── migrations/             # SQL migration files
+└── README.md
 ```
 
-## Quick Start
+## Prerequisites
 
-### Prerequisites
-- Java 17+
-- Node.js 18+
-- PostgreSQL 14+
-- Gradle (optional; the repo includes the Gradle wrapper so you do not need to install Gradle)
+- Java 17 or higher
+- PostgreSQL 14 or higher
+- Gradle (wrapper included, no installation needed)
+- Chrome or Edge browser (for extension)
 
-### 1) Configure environment (.env)
+## Setup
 
-Create a `.env` file in the repo root:
+### Database Setup
 
-**Windows (PowerShell):**
-```powershell
-Copy-Item env.example .env
+1. Create the database:
+```sql
+CREATE DATABASE autoapply;
 ```
 
-**macOS/Linux (Bash):**
-```bash
-cp env.example .env
-```
-
-Edit `.env` and set at minimum:
-- `DB_USERNAME`
-- `DB_PASSWORD`
-- `JWT_SECRET`
-
-### 2) Create DB and run migrations
-
-Create the database:
-
-```bash
-psql -U postgres -c "CREATE DATABASE autoapply;"
-```
-
-Apply migrations in order (run from the repo root):
-
+2. Run migrations in order (from repository root):
 ```bash
 psql -U postgres -d autoapply -f database/migrations/001_initial_schema.sql
 psql -U postgres -d autoapply -f database/migrations/002_add_password_reset_tokens.sql
 psql -U postgres -d autoapply -f database/migrations/003_update_job_application_statuses.sql
 ```
 
-## Running the Application
+### Running the Backend
 
-### Backend (Spring Boot unified service)
-
-**Windows (PowerShell):**
+**Windows:**
 ```powershell
 cd backend
-.\gradlew.bat :unified-service:build -x test
-.\gradlew.bat :unified-service:bootRun
+.\gradlew.bat bootRun
 ```
 
-**macOS/Linux (Bash):**
+**macOS/Linux:**
 ```bash
 cd backend
-./gradlew :unified-service:build -x test
-./gradlew :unified-service:bootRun
+./gradlew bootRun
 ```
 
-**Frontend:**
-```bash
-cd frontend
-npm install
-npm run dev
-```
+The backend will start on `http://localhost:8080`.
 
-### Browser Extension Icons (one-time)
-
-- Open `browser-extension/create-icons.html` in a browser
-- Click "Download All Icons"
-- Save the icons to `browser-extension/icons/`
-
-### Notes
-
-- The backend reads variables from `.env` on startup (for local development).
-- If the frontend can’t reach the backend, confirm the backend is running on `http://localhost:8080` and check the proxy in `frontend/vite.config.js`.
-
-## Service Ports
-
-- Unified Service: `http://localhost:8080`
-  - Auth API: `/api/auth/**`
-  - Profile API: `/api/profile/**`
-  - Job Parser API: `/api/jobs/**`
-  - Resume Tailor API: `/api/resumes/**`
-  - Application Tracker API: `/api/applications/**`
-- Frontend: `http://localhost:3000`
-
-## Browser Extension Setup
+### Browser Extension Setup
 
 1. Open Chrome/Edge and navigate to:
    - Chrome: `chrome://extensions/`
@@ -128,71 +126,98 @@ npm run dev
 
 4. Select the `browser-extension` folder
 
-5. Click the extension icon and login or enter your JWT token
-6. Click "Auto Apply (Supervised)" to fill fields, review on-page, then proceed to Next/Submit
-
-## Features
-
-### ✅ Implemented
-- User authentication (JWT)
-- Profile management (experiences, education, skills)
-- Job description parsing (AI stubbed, ready for integration)
-- Resume tailoring (AI stubbed, ready for integration)
-- Application tracking
-- Browser extension for auto-fill
-- **🤖 Intelligent Form Automation** - AI-powered page analysis and automated form filling
-
-### 🚧 Ready for Integration
-- AI-powered job parsing (NLP models)
-- AI-powered resume tailoring
-- **AI-powered page analysis** (OpenAI GPT-4 Vision, Claude, etc.)
-- ATS scoring algorithm
-- Profile enhancement suggestions
-
-## Development Roadmap
-
-See [ROADMAP.md](./docs/ROADMAP.md) for detailed development plan.
-
-## Documentation
-
-- [ROADMAP.md](./docs/ROADMAP.md) - Development roadmap
-- [database/README.md](./database/README.md) - Database setup
-- [backend/GRADLE_SETUP.md](./backend/GRADLE_SETUP.md) - Gradle setup guide
-- [MAVEN_TO_GRADLE_MIGRATION.md](./docs/MAVEN_TO_GRADLE_MIGRATION.md) - Migration notes
+5. Click the extension icon and login with your credentials
 
 ## API Endpoints
 
+Base URL: `http://localhost:8080/api`
+
 ### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
 
-### Profile
-- `GET /api/profile/{userId}` - Get user profile
-- `POST /api/profile/{userId}` - Create/update profile
-- `PUT /api/profile/{userId}` - Update profile
+- `POST /api/auth/register` - Register a new user
+  ```json
+  {
+    "email": "user@example.com",
+    "password": "password123",
+    "firstName": "John",
+    "lastName": "Doe"
+  }
+  ```
 
-### Job Parser
-- `POST /api/jobs/parse` - Parse job description
+- `POST /api/auth/login` - Login and get JWT token
+  ```json
+  {
+    "email": "user@example.com",
+    "password": "password123"
+  }
+  ```
+  Returns: `{ "accessToken": "...", "userId": 1, "email": "...", ... }`
 
-### Resume Tailor
-- `POST /api/resumes/tailor` - Tailor resume to job
+- OAuth2 endpoints (browser redirects):
+  - `/login/oauth2/code/google` - Google OAuth2 login
+  - `/login/oauth2/code/github` - GitHub OAuth2 login
 
-### Form Automation (NEW)
-- `POST /api/automation/analyze` - Analyze page and generate automation plan
+### Jobs
 
-### Applications
-- `GET /api/applications/user/{userId}` - Get user applications
-- `POST /api/applications` - Create application
-- `PUT /api/applications/{id}` - Update application
-- `DELETE /api/applications/{id}` - Delete application
+All job endpoints require authentication via `Authorization: Bearer <token>` header.
+
+- `POST /api/jobs` - Create a new job application
+  ```json
+  {
+    "title": "Software Engineer",
+    "company": "Tech Corp",
+    "url": "https://example.com/job/123",
+    "description": "Job description here",
+    "status": "SAVED",
+    "notes": "Optional notes"
+  }
+  ```
+
+- `GET /api/jobs` - List all job applications for the authenticated user
+
+- `GET /api/jobs/{id}` - Get a specific job application by ID
+
+- `PUT /api/jobs/{id}` - Update a job application
+  ```json
+  {
+    "title": "Updated Title",
+    "status": "APPLIED",
+    "notes": "Updated notes"
+  }
+  ```
+
+- `DELETE /api/jobs/{id}` - Delete a job application
+
+## Development
+
+### Build
+
+```bash
+cd backend
+./gradlew build
+```
+
+### Run Tests
+
+```bash
+cd backend
+./gradlew test
+```
+
+## Configuration
+
+Configuration is managed via `application.properties` and environment variables. Key properties:
+
+- Database connection: `spring.datasource.*` (reads from environment variables: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD`)
+- JWT: `jwt.secret`, `jwt.expiration-ms`
+- OAuth2: `spring.security.oauth2.client.registration.*` (Google & GitHub client IDs and secrets)
+- Server port: `server.port` (default: 8080)
+- CORS: Configured for localhost:3000 and browser extensions
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
-
-## Support
-
-For issues and questions, please open an issue on GitHub.
+1. Create a feature branch from `main`
+2. Make your changes following the project structure guidelines
+3. Test your changes
+4. Commit with clear messages
+5. Push and create a pull request

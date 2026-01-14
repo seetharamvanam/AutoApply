@@ -5,8 +5,6 @@ import Login from './pages/Login'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import Profile from './pages/Profile'
-import JobAnalyzer from './pages/JobAnalyzer'
-import ResumeTailor from './pages/ResumeTailor'
 import ApplicationTracker from './pages/ApplicationTracker'
 import Layout from './components/common/Layout'
 
@@ -28,8 +26,6 @@ function App() {
           >
             <Route index element={<Navigate to="/profile" replace />} />
             <Route path="profile" element={<Profile />} />
-            <Route path="job-analyzer" element={<JobAnalyzer />} />
-            <Route path="resume-tailor" element={<ResumeTailor />} />
             <Route path="applications" element={<ApplicationTracker />} />
           </Route>
         </Routes>

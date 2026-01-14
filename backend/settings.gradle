@@ -1,13 +1,1 @@
-rootProject.name = 'autoapply-parent'
-
-// Unified service (single service instead of microservices)
-include 'unified-service'
-
-// Individual services (kept for reference, but not used)
-// include 'gateway-service'
-// include 'auth-service'
-// include 'profile-service'
-// include 'job-parser-service'
-// include 'resume-tailor-service'
-// include 'application-tracker-service'
-
+rootProject.name = 'autoapply'
