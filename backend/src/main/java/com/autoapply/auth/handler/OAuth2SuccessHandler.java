@@ -49,7 +49,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         if (attributes.containsKey("email")) {
             return (String) attributes.get("email");
         }
-        // GitHub may need additional API call, but for now try login
+        // Fallback to login or name if email is not available
         return (String) attributes.getOrDefault("login", attributes.get("name"));
     }
 
