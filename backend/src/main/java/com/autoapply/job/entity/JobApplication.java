@@ -78,4 +78,14 @@ public class JobApplication {
         REJECTED,
         WITHDRAWN
     }
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "source_type")
+    @Builder.Default
+    private SourceType sourceType = SourceType.LINK;
+
+    public enum SourceType {
+        LINK,
+        MANUAL
+    }
 }

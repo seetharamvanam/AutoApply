@@ -26,6 +26,8 @@ public class JobService {
                 .url(request.getUrl())
                 .description(request.getDescription())
                 .status(request.getStatus() != null ? request.getStatus() : JobApplication.Status.SAVED)
+                .sourceType(
+                        request.getSourceType() != null ? request.getSourceType() : JobApplication.SourceType.MANUAL)
                 .notes(request.getNotes())
                 .build();
 
@@ -53,12 +55,18 @@ public class JobService {
         JobApplication job = jobRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Job application not found"));
 
-        if (request.getTitle() != null) job.setTitle(request.getTitle());
-        if (request.getCompany() != null) job.setCompany(request.getCompany());
-        if (request.getUrl() != null) job.setUrl(request.getUrl());
-        if (request.getDescription() != null) job.setDescription(request.getDescription());
-        if (request.getStatus() != null) job.setStatus(request.getStatus());
-        if (request.getNotes() != null) job.setNotes(request.getNotes());
+        if (request.getTitle() != null)
+            job.setTitle(request.getTitle());
+        if (request.getCompany() != null)
+            job.setCompany(request.getCompany());
+        if (request.getUrl() != null)
+            job.setUrl(request.getUrl());
+        if (request.getDescription() != null)
+            job.setDescription(request.getDescription());
+        if (request.getStatus() != null)
+            job.setStatus(request.getStatus());
+        if (request.getNotes() != null)
+            job.setNotes(request.getNotes());
 
         JobApplication updated = jobRepository.save(job);
         return toDTO(updated);
@@ -81,10 +89,51 @@ public class JobService {
                 .company(job.getCompany())
                 .description(job.getDescription())
                 .status(job.getStatus())
+                .sourceType(job.getSourceType())
                 .appliedAt(job.getAppliedAt())
                 .notes(job.getNotes())
                 .createdAt(job.getCreatedAt())
                 .updatedAt(job.getUpdatedAt())
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public com.autoapply.job.dto.DashboardStatsDTO getDashboardStats(Long userId) {
+        List<Object[]> stats = jobRepository.countJobsByStatus(userId);
+
+        java.util.Map<String, Long> statusBreakdown = new java.util.HashMap<>();
+        long totalApplied = 0;
+        long totalInterviews = 0;
+        long totalOffers = 0;
+        long totalRejected = 0;
+
+        for (Object[] result : stats) {
+            JobApplication.Status status = (JobApplication.Status) result[0];
+            Long count = (Long) result[1];
+            statusBreakdown.put(status.name(), count);
+
+            // Aggregate high-level stats
+            if (status != JobApplication.Status.SAVED) {
+                totalApplied += count;
+            }
+            if (status == JobApplication.Status.INTERVIEW || status == JobApplication.Status.INTERVIEW_DONE
+                    || status == JobApplication.Status.SCREENING) {
+                totalInterviews += count;
+            }
+            if (status == JobApplication.Status.OFFER) {
+                totalOffers += count;
+            }
+            if (status == JobApplication.Status.REJECTED) {
+                totalRejected += count;
+            }
+        }
+
+        return com.autoapply.job.dto.DashboardStatsDTO.builder()
+                .totalApplied(totalApplied)
+                .totalInterviews(totalInterviews)
+                .totalOffers(totalOffers)
+                .totalRejected(totalRejected)
+                .statusBreakdown(statusBreakdown)
                 .build();
     }
 }
