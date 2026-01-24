@@ -10,6 +10,11 @@ import java.util.Optional;
 @Repository
 public interface JobApplicationRepository extends JpaRepository<JobApplication, Long> {
     List<JobApplication> findByUserIdOrderByCreatedAtDesc(Long userId);
+
     Optional<JobApplication> findByIdAndUserId(Long id, Long userId);
+
     boolean existsByIdAndUserId(Long id, Long userId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT j.status, COUNT(j) FROM JobApplication j WHERE j.userId = :userId GROUP BY j.status")
+    List<Object[]> countJobsByStatus(Long userId);
 }

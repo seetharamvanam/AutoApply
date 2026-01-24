@@ -20,6 +20,7 @@ public class JobApplicationDTO {
     private String company;
     private String description;
     private JobApplication.Status status;
+    private JobApplication.SourceType sourceType;
     private LocalDateTime appliedAt;
     private String notes;
     private LocalDateTime createdAt;

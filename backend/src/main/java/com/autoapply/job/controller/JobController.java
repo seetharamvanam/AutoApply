@@ -1,9 +1,11 @@
 package com.autoapply.job.controller;
 
 import com.autoapply.job.dto.CreateJobRequest;
+import com.autoapply.job.dto.DashboardStatsDTO;
 import com.autoapply.job.dto.JobApplicationDTO;
 import com.autoapply.job.dto.UpdateJobRequest;
 import com.autoapply.job.service.JobService;
+import com.autoapply.job.service.LinkParserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JobController {
     private final JobService jobService;
+    private final LinkParserService linkParserService;
 
     @PostMapping
     public ResponseEntity<JobApplicationDTO> createJob(
@@ -27,6 +30,20 @@ public class JobController {
         Long userId = getUserId(userDetails);
         JobApplicationDTO job = jobService.createJob(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(job);
+    }
+
+    @PostMapping("/parse")
+    public ResponseEntity<JobApplicationDTO> parseLink(@RequestBody String url) {
+        JobApplicationDTO job = linkParserService.parseJobLink(url);
+        return ResponseEntity.ok(job);
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<DashboardStatsDTO> getDashboardStats(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        Long userId = getUserId(userDetails);
+        DashboardStatsDTO stats = jobService.getDashboardStats(userId);
+        return ResponseEntity.ok(stats);
     }
 
     @GetMapping

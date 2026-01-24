@@ -15,5 +15,6 @@ public class CreateJobRequest {
     private String url;
     private String description;
     private JobApplication.Status status;
+    private JobApplication.SourceType sourceType;
     private String notes;
 }
